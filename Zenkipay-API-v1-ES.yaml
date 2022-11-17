@@ -50,7 +50,7 @@ paths:
     post:
       operationId: createToken
       summary: Crea un token de autentización en Zenki
-      description: Esta peticón debe ser enviada cada vez que se requiera generar un token para consumir los servicios de Zenki
+      description: Esta peticón debe ser enviada cada vez que se requiera generar un token para consumir los servicios de Zenki.
       externalDocs:
         url: 'https://developer.zenki.fi/'
         description: >-
