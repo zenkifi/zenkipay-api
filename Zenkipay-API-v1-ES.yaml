@@ -1,0 +1,2334 @@
+#+==========================================================================================
+#| Copyright 2022 el autor o autores originales.
+#|
+#| Queda prohibido copiar, reproducir, distribuir, publicar, transmitir, difundir, o 
+#| en cualquier modo explotar cualquier parte de este documento sin la autorización 
+#| previa por escrito de Zenki o de los titulares correspondientes.
+#+-----------------------------------------------------------------------------------------
+#|
+#|  Definición de API para Zenkipay
+#|
+#+-----------------------------------------------------------------------------------------
+#+=========================================================================================
+openapi: 3.0.0
+info:
+  title: Zenkipay API
+  version: 1.0.0
+  contact:
+    email: support@zenki.fi
+    name: Equipo de soporte
+    url: 'https://www.zenki.fi/'
+  description: |-
+    Definición de especificación técnica del producto; Zenkipay es una pasarela
+    de pago de criptomonedas que permite a los comercios recibir pagos en sus
+    portales de comercio electrónico. A diferencia de otras plataformas,
+    Zenkipay asegura la satisfacción del cliente a través de su proceso de
+    depósito en garantía (producto entregado y calidad esperada) para liquidar
+    el pago al comercio, evitando así la pérdida de activos del cliente debido a
+    estafas en línea.
+  termsOfService: 'https://www.zenki.fi/legal-center/'
+externalDocs:
+  url: 'https://doc.zenki.fi/'
+servers:
+  - url: 'https://api.zenki.fi/'
+    description: Ambiente de producción
+    variables: {}
+  - url: 'https://uat-api.zenki.fi/'
+    description: Ambiente de pruebas
+tags:
+  - name: Autenticación y autorización
+  - name: Comercios
+  - name: Ordenes
+  - name: Rastreos
+  - name: Reembolsos
+  - name: Webhooks
+paths:
+#---------------------------------------------
+#  Endpoint: Crear token oAuth2
+#---------------------------------------------
+  '/v1/oauth/tokens':
+    post:
+      operationId: createToken
+      summary: Crea un token de autentización en Zenki
+      description: Esta peticón debe ser enviada cada vez que se requiera generar un token para consumir los servicios de Zenki
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, puede consultar la documentación
+          oficial de Zenkipay.
+      parameters: []
+      tags:
+        - Autenticación y autorización
+      security:
+        - oAuth2ClientCredentials: []
+      requestBody:
+        description: Parámetros para creación de token OAuth 2
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RequestTokenOAuth2'
+      responses:
+        '200':
+          description: Token creado de manera exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenOAuth2'
+        '400':
+          description: Ocurrió un error en la creación del token, revise los detalles y vuelva a intentarlo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationErrorResponse'
+        '500':
+          description: Error inesparado creando token de autenticación, contacte el equipo de soporte de Zenki en support@zenki.fi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationErrorResponse'
+#---------------------------------------------
+#  Endpoint: Configuración comercio
+#---------------------------------------------
+  '/v1/pay/me':
+    get:
+      summary: Información del comercio.
+      description: Se obtiene la configuración actual del comercio.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: getMerchantInfo
+      responses:
+        '200':
+          description: Obtiene información del comercio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Merchant'
+        '400':
+          description: Parámetro de comercio esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Comercios
+      security:
+        - JWTAuth: []
+#---------------------------------------------
+#  Endpoint: Registro de orden para pago
+#---------------------------------------------
+  '/v1/pay/orders':
+    post:
+      summary: Registro de orden para pago
+      description: Servicio que permite registrar una orden de pago y asociarla a un comercio.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: createOrder
+      responses:
+        '201':
+          description: Orden creada
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Parámetro de orden esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Ordenes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+        description: >-
+          Se mandará una estructura JSON que tendrá la información requerida
+          para crear una orden.
+      security:
+        - JWTAuth: []
+#---------------------------------------------
+#  Endpoint: Consulta de orden de pago
+#---------------------------------------------
+  '/v1/pay/orders/{zenkiOrderId}':
+    get:
+      summary: Información de la orden
+      description: Se obtiene la información de la orden basado en el id de la orden de Zenkipay.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: getOrder
+      responses:
+        '200':
+          description: Obtener orden por id
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Parámetro de orden esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Ordenes
+      security:
+        - JWTAuth: []
+#---------------------------------------------
+#  Endpoint: Registro de guías para rastreo
+#---------------------------------------------
+  '/v1/pay/orders/{zenkiOrderId}/tracking':
+    post:
+      summary: Registro de envíos para rastreo
+      description: Se registran uno o más numeros de rastreo del envío por el número de orden.
+      externalDocs:
+        url: 'http://developer.zenki.fi/'
+        description: >-
+          Si desea conocer más información sobre los servicios, consulta la
+          documentación oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: registerTrackingOrders
+      responses:
+        '201':
+          description: Rastreo registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Traking'
+        '400':
+          description: Parámetro de rastreo esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Rastreos
+      security:
+        - JWTAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTraking'
+        description: >-
+          Se podrá solicitar una o varios reembolsos para una misma orden siempre y cuando no supere el monto total de la orden original.
+#---------------------------------------------
+#  Endpoint: Actualización de guías para rastreo
+#---------------------------------------------
+  '/v1/pay/orders/{zenkiOrderId}/tracking/{zenkiTrackId}':
+    patch:
+      summary: Actualización del estado de envío
+      description: Basado en el id de la orden y el id de rastreo se actualiza el estado de la entrega
+      externalDocs:
+        url: 'http://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: path
+          name: zenkiTrackId
+          required: true
+          schema:
+            type: string
+          description: Identificador único del rastreo generado por Zenkipay.
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: addEventTracking
+      responses:
+        '201':
+          description: Actualización exitosa del estado de envío
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrakingEvents'
+        '400':
+          description: Parámetro de rastreo esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Rastreos
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTrakingEvent'
+        description: >-
+          Se mandará una estructura JSON que tendrá la información requerida
+          para actualizar el estado del envío.
+      security:
+        - JWTAuth: []
+#---------------------------------------------
+#  Endpoint: Registro de reembolso
+#---------------------------------------------
+  '/v1/pay/orders/{zenkiOrderId}/refunds':
+    post:
+      summary: Registro de rembolsos para una orden
+      description: Se registran uno o más rembolsos por el número de orden.
+      externalDocs:
+        url: 'http://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: registerRefundOrder
+      responses:
+        '201':
+          description: Reembolso generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '400':
+          description: Parámetro de reembolso esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reembolsos
+      security:
+        - JWTAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestRefund'
+        description: >-
+          Se podrán mandar uno o varios reembolsos.
+#---------------------------------------------
+#  Endpoint: Consulta de reembolso
+#---------------------------------------------
+  '/v1/pay/orders/{zenkiOrderId}/refunds/{zenkiRefundId}':
+    get:
+      summary: Registro de rembolsos para una orden
+      description: Se registran uno o más rembolsos por el número de orden.
+      externalDocs:
+        url: 'http://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: path
+          name: zenkiRefundId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.  
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+        - in: header
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: getRefundOrder
+      responses:
+        '201':
+          description: Información de reembolso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '400':
+          description: Parámetro de reembolso esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reembolsos
+      security:
+        - JWTAuth: []
+#---------------------------------------------
+#  Endpoint: Webhooks que van a recibir los comercios
+#---------------------------------------------
+  '/URL_MERCHANT':
+    post:
+      summary: Notificaciones de eventos para el comercio
+      description: Servicio que permite enviar diferentes eventos al comercio.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: header
+          name: Svix-Id
+          required: true
+          schema:
+            type: string
+          description: Identificador de mensaje único para el mensaje de webhook. Este identificador es único en todos los mensajes, pero será el mismo cuando se reenvíe el mismo webhook (por ejemplo, debido a un error anterior).
+          example: msg_2HYAP5mNDMxY0LurmzrPvGYJTdq
+        - in: header
+          name: Svix-Timestamp
+          required: true
+          schema:
+            type: string
+          description: |- 
+            Fecha y hora cuando se envía el webhook al comercio, en formato de milisegundos y UTC.
+
+            La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+          example: 1668451615
+        - in: header
+          name: Svix-Signature
+          required: true
+          schema:
+            type: string
+          description: |- 
+            Firma codificada en Base64 (delimitada por espacios) sobre el contenido evíado, la firma es generada a partir de la siguiente estructura: signed_content = "${svix_id}.${svix_timestamp}.${body}".
+          example: v1,HNHAxGk8b5lX2xC1uVUQy6AXgmPKrfNV4I+yENBC4Fk=
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+      operationId: sendEvent
+      responses:
+        '200':
+          description: Evento recibido por el comercio
+        '500':
+          description: Error interno del servidor
+      tags:
+        - Webhooks
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Webhook'
+        description: >-
+          Se mandará una estructura JSON que tendrá la información sobre el evento para notificar al comercio.
+security: []
+#-------------------------------
+# Modelos de datos de los servicios
+#-------------------------------
+components:
+  links: {}
+  callbacks: {}
+  schemas:
+
+#---------------------------------------------
+#  Object: CreateOrder
+#---------------------------------------------
+    CreateOrder:
+      description: Objeto utilizado con la información requerida para crear una orden.
+      type: object
+      required:
+        - version
+        - order_id
+        - type
+        - country_code_iso2
+        - breakdown
+        - items
+      properties:
+        version:
+          description: Versión del modelo de datos, su valor actual debe ser v1.1.0.
+          type: string
+          nullable: false
+          maxLength: 9
+          example: v1.1.0
+        order_id:
+          description: Identificador único de la orden generado por el comercio.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: f3359498592b
+        cart_id:
+          description: Identificador único del carrito de compra que permite identificar la compra de uno o varios productos o servicios.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: 96a17044f0e3
+        type:
+          description: |-
+            Indica el modelo para la entrega del producto o servicio.
+            
+            Posibles valores:
+            * WITH_CARRIER    - Para la entrega del producto o servicio se va a utilizar un carrier de envío.
+            * WITHOUT_CARRIER - Para la entrega del producto o servicio NO se va a utilizar un carrier de envío.
+            * MIXED           - Para la entrega de los productos o servicios una parteutilizará un carrier de envío y otra parte se entregara sin utilizar un carrier de envío.
+          type: string
+          nullable: false
+          enum:
+            - WITH_CARRIER
+            - WITHOUT_CARRIER
+            - MIXED
+          example: MIXED
+        country_code_iso2:
+          description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
+          type: string
+          nullable: false
+          maxLength: 2
+          example: MX
+        shopper:
+          $ref: '#/components/schemas/Shopper'
+        #-[Objeto breakdown]-
+        breakdown:
+          $ref: '#/components/schemas/Breakdown'
+        #-[ITEMS]-
+        items:
+          description: Conjunto de productos o servicios considerados dentro del carrito de compra.
+          type: array
+          nullable: false
+          items:
+            $ref: '#/components/schemas/Item'
+        metadata:
+          description: Información complementaria de la orden que el comercio requiera enviar e informar a Zenkipay.
+          nullable: true
+          additionalProperties:
+              type: string
+          example: 
+            tracking_id: 5514a95b0882
+            
+#---------------------------------------------
+#  Object: AddTraking
+#---------------------------------------------
+    AddTraking:
+      type: object
+      required:
+        - courier_type
+      properties:
+        courier_type:
+          description: |- 
+            Tipo de mensajeria utilizada para realizar la entrega del producto o servicio.
+            
+            Posibles valores:
+            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo tracking_id.
+            * INTERNAL - Si se utiliza la infraestructura proía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courier_name.
+          type: string
+          nullable: false
+          enum:
+          - EXTERNAL
+          - INTERNAL
+          example: EXTERNAL
+        tracking_id:
+          description: Identificador único de rastreo generado por una mensajería.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: d65a558951d3
+        courier_name:
+          description: Nombre de la mensajeria interna del comercio utilizada para entregar el servicio o producto.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: Mensajeria interna - Zapatería Hermanos
+            
+#---------------------------------------------
+#  Object: AddTrakingEvent
+#---------------------------------------------
+    AddTrakingEvent:
+      type: object
+      required:
+        - status
+        - location
+        - description
+      properties:
+        status:
+          description: |- 
+            Estados del proceso de entrega.
+            
+            Posibles valores:
+            * TRANSIT - En proceso de entrega.
+            * DELIVERY - Se ha entregado el producto o servicio.
+            * AVAILABLE_FOR_PICKUP - El producto o servicio está listo para que el comprador pueda recogerlo en el sitio del comercio.
+            * CANCELED - Se ha cancelado el envío.
+            * FAILED - Hubo algún problema al intentar entregar el producto o servicio.
+          type: string
+          enum:
+          - TRANSIT 
+          - DELIVERY
+          - AVAILABLE_FOR_PICKUP
+          - CANCELED
+          - FAILED
+          nullable: false
+          example: TRANSIT
+        location:
+          description: lugar donde se detona el evento y que se encuentra el paquete.
+          type: string
+          nullable: false
+          maxLength: 255
+          example: Lugar.
+        description:
+          description: Detalle del error por el cual no se pudo completar el envíoo si se entrego correctamente el producto o servicio, indicar quien lo recibió.
+          type: string
+          nullable: false
+          maxLength: 255
+          example: Dirección inválida.
+            
+#---------------------------------------------
+#  Object: RequestRefund
+#---------------------------------------------
+    RequestRefund:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          description: Motivo o razón del reembolso.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: Ya no tenía en inventario.
+            
+#---------------------------------------------
+#  Object: Order
+#---------------------------------------------
+    Order:
+      description: Objeto que representa la información detallada de una orden.
+      type: object
+      required:
+        - zenki_order_id
+        - version
+        - type
+        - country_code_iso2
+        - status
+        - created_at
+        - breakdown
+        - items
+      properties:
+        version:
+          description: Versión del modelo de datos, su valor actual debe ser v1.1.0.
+          type: string
+          nullable: false
+          maxLength: 9
+          example: v1.1.0
+        zenki_order_id:
+          description: Identificador único de la orden generado por Zenkipay.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: f325da2b8e3f476caa07e039406e72f0
+        order_id:
+          description: Identificador único de la orden generado por el comercio.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: f3359498592b
+        cart_id:
+          description: Identificador único del carrito de compra que permite identificar la compra de uno o varios productos o servicios.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: 96a17044f0e3
+        type:
+          description: |-
+            Indica el modelo para la entrega del producto o servicio.
+            
+            Posibles valores:
+            * WITH_CARRIER    - Para la entrega del producto o servicio se va a utilizar un carrier de envío.
+            * WITHOUT_CARRIER - Para la entrega del producto o servicio NO se va a utilizar un carrier de envío.
+            * MIXED           - Para la entrega de los productos o servicios una parteutilizará un carrier de envío y otra parte se entregara sin utilizar un carrier de envío.
+          type: string
+          nullable: false
+          enum:
+            - WITH_CARRIER
+            - WITHOUT_CARRIER
+            - MIXED
+          example: MIXED
+        country_code_iso2:
+          description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
+          type: string
+          nullable: false
+          maxLength: 2
+          example: MX
+        status:
+          description: |-
+            Estado de la orden
+            
+            Posibles valroes:
+            * PENDING                   - En espera a que el comprador pague la orden de pago.
+            * READY4PAY                 - Al comprador se le ha mostrado la modal y la orden está lista para que el comprador pague la ordes con su monedero.
+            * AWAITING_PAYMENT          - Se ha recibido una primera confirmación por la red de blockchain, está en la espera de tener las confirmaciones requeridas.
+            * AWAITING_DELIVERY         - Ya se realizó el pago del producto o servicio y se está en proceso la entrega del producto o servicio.
+            * DELIVERED_SERVICE         - Ya se ha realizado la entrega del servicio.
+            * AWAITING_SHIPMENT         - Ya se realizó ya carga de la guía para productos y está en proceso el envío.
+            * SHIPPED                   - Se ha enviado el producto o servicio.
+            * SHIPMENT_ERROR            - Hubo un problema en el proceso de envío.
+            * AWAITING_SHOPPER_APPROVAL - Esperando la aprobación por parte del comprador para confirmar que ha recibido el producto o servicio.
+            * DISPUTED                  - El comprador ha iniciado un proceso de disputa con el comercio.
+            * PENDING_SHOPPER_RETURN    - El comercio esta esperando a que el comrpador realice el regreso del producto, como resultado de la disputa.
+            * REFUNDED                  - Se ha realizado el reembolso del producto o servicio al comprador.
+            * COMPLETED                 - El comprador confirma la recepción del producto o servicio satisfactoriamente y el ha hecho el intercambio a moneda estable del valor de la venta solo si aplica.
+            * SETTLED                   - Se ha liquidado la transacción al comercio.
+          type: string
+          nullable: false
+          enum:
+            - PENDING
+            - READY4PAY
+            - AWAITING_PAYMENT
+            - AWAITING_DELIVERY
+            - DELIVERED_SERVICE
+            - AWAITING_SHIPMENT
+            - SHIPPED
+            - SHIPMENT_ERROR
+            - AWAITING_SHOPPER_APPROVAL
+            - DISPUTED
+            - PENDING_SHOPPER_RETURN
+            - REFUNDED
+            - COMPLETED
+            - SETTLED
+          example: PENDING
+        created_at:
+          description: |- 
+            Fecha y hora cuando Zenkipay recibió la solicitud para crear la orden, en formato de milisegundos y UTC.
+            
+            La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+          type: integer
+          nullable: false
+          format: int64
+          minimum: 0
+          example: 1667353629
+        shopper:
+          $ref: '#/components/schemas/Shopper'
+        #-[Objeto breakdown]-
+        breakdown:
+          $ref: '#/components/schemas/Breakdown'
+        #-[Objeto payment_info]-
+        payment_info:
+          description: Información del pago
+          type: object
+          required:
+          - exchange_rate
+          - crypto_love
+          - crypto_payment
+          nullable: true
+          properties:
+            exchange_rate:
+              description: Resumen del tipo de cambio usado para el pago, desde la moneda local a USD
+              type: object
+              required:
+              - from
+              - to
+              - value
+              - timestamp
+              nullable: false
+              properties:
+                from:
+                  description: 'Código único de la moneda del país que se informa en la orden, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html'
+                  type: string
+                  nullable: false
+                  maxLength: 5
+                  example: MXN
+                to:
+                  description: 'Código único de la moneda del país, que se usa para liquidar al comercio, siempre en USD, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html'
+                  type: string
+                  nullable: false
+                  maxLength: 5
+                  example: USD
+                value:
+                  description: Valor del tipo de cambio utilizado para realizar la conversión entre moneda local y USD.
+                  type: number
+                  nullable: false
+                  format: double
+                  minimum: 0
+                  example: 20.00
+                amount:
+                  description: Monto pagado en USD.
+                  type: number
+                  nullable: false
+                  format: double
+                  minimum: 0
+                  example: 50.00
+                timestamp:
+                  description: |- 
+                    Fecha y hora en la que se realizo la compra y venta de la cripto moneda, en formato de milisegundos y UTC.
+                    
+                    La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+                  type: integer
+                  nullable: false
+                  format: int64
+                  minimum: 0
+                  example: 1667353629
+            crypto_love:
+              description: Resumen del descuento realizado a la compra por el uso de crypto love.
+              type: object
+              required:
+              - discount_percentage
+              - discount_amount
+              - final_amount
+              - currency
+              nullable: false
+              properties:
+                discount_percentage:
+                  description: Descuento en porcentaje otorgado por el comercio al comprador en su compra por activar crypto love.
+                  type: number
+                  nullable: false
+                  format: double
+                  minimum: 0
+                  maximum: 100
+                  example: 1
+                discount_amount:
+                  description: Descuento en monto otorgado por el comercio al comprador en su compra por activar crypto love en USD.
+                  type: number
+                  nullable: false
+                  format: double
+                  minimum: 0
+                  example: 0.5
+                final_amount:
+                  description: Monto del pago despues del descuento en USD.
+                  type: number
+                  nullable: false
+                  format: double
+                  minimum: 0
+                  example: 49.5
+                currency:
+                  description: 'Código único de la moneda del país, que se usa para liquidar al comercio, siempre en USD, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html'
+                  type: string
+                  nullable: false
+                  maxLength: 5
+                  example: USD
+            crypto_payment:
+              $ref: '#/components/schemas/CryptoPayment'
+        #-[Objeto settlement_info]-
+        settlement_info:
+          description: Información de la orden para la liquidación a comercio
+          type: object
+          required:
+          - crypto_settlement
+          nullable: true
+          properties:
+            crypto_settlement:
+              description: Detalle del pago a realizar en cripto moneda
+              type: object
+              required:
+              - final_amount
+              - currency
+              nullable: false
+              properties:
+                final_amount:
+                  description: Monto pagado en USD.
+                  type: string
+                  nullable: false
+                  maxLength: 64
+                  example: 49.4
+                currency:
+                  description: Código de la cripto moneda véase https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-criptomonedas-soportadas.
+                  type: string
+                  nullable: false
+                  maxLength: 5
+                  example: USDC
+        #-[ITEMS]-
+        items:
+          description: Conjunto de productos o servicios considerados dentro del carrito de compra.
+          type: array
+          nullable: false
+          items:
+            $ref: '#/components/schemas/Item'
+        metadata:
+          description: Información complementaria de la orden que el comercio requiera enviar e informar a Zenkipay.
+          nullable: true
+          additionalProperties:
+              type: string
+          example: 
+            tracking_id: 5514a95b0882
+        #-[Object: DISPUTE]-
+        dispute:
+          description: Detalle del proceso de una disputa.
+          type: object
+          required:
+          - status
+          - created_at
+          nullable: false
+          properties:
+            status:
+              description: |-
+                Estado actual de la disputa.
+                
+                Posibles valores:
+                * OPEN     - Se ha iniciado el proceso de disputa
+                * REFUND   - Se ha cerrado el proceso de disputa y se realizó un reembolso parcial o total del monto total de la orden.
+                * RESOLVED - Se ha cerrado el proceso de disputa sin realizar ningún movimiento de reembolso hacia el comprador.
+              type: string
+              nullable: false
+              enum:
+              - OPEN
+              - REFUND
+              - RESOLVED
+              example: OPEN
+            created_at:
+              description: |- 
+                Fecha y hora en la que se inicio la disputa, en formato de milisegundos y UTC.
+                    
+                La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+              type: integer
+              nullable: false
+              format: int64
+              minimum: 0
+              example: 1667353629
+            resolution_request_type:
+              description: |- 
+                Tipo de apoyo solicitado a staff de Zenki.
+                
+                Posibles valores:
+                * REQUEST_REFUND      - Solicitud de apoyo a staff de Zenki para realizar reembolso.
+                * REQUEST_CONCILIATED - Solicitud a staff de Zenki para conciliar dispita entre comprador y comercio.
+              type: string
+              nullable: false
+              enum:
+              - REQUEST_REFUND 
+              - REQUEST_CONCILIATED
+              example: REQUEST_CONCILIATED
+            resolution_request_at:
+              description: |- 
+                Fecha y hora en la que se finalizo la disputa y se dió una resolución final del proceso al comprador, en formato de milisegundos y UTC.
+                    
+                La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+              type: integer
+              nullable: false
+              format: int64
+              minimum: 0
+              example: 1667353629
+            
+        #-[Object: CLARIFICATION]-
+        claim:
+          description: Detalle del proceso de una aclaración, cuando se realiza un pago y Zenkipay no puede identificarlo y asocialo a la orden para el pago.
+          type: object
+          required:
+          - zenki_claim_id
+          - status
+          - created_at
+          nullable: false
+          properties:
+            reason:
+              description: Razón por la que se inicio la aclaración.
+              type: string
+              nullable: true
+              maxLength: 255
+              example: Se acabo el inventario
+            status:
+              description: |-
+                Estado actual del reclamo.
+                    
+                Posibles valores:
+                * OPEN     - Se ha iniciado el proceso de la reclamación
+                * REFUND   - Se ha cerrado el proceso de la reclamación y se realizó un reembolso parcial o total del monto total de la orden.
+                * RESOLVED - Se ha cerrado el proceso de la reclamación sin realizar ningún movimiento de reembolso hacia el comprador. Cuando se aplica la asociación del pago
+                * REJECTED - Cuando no aplica el reclamo,. por que trata de asociar un pago que no coincide con los datos de la transacción.
+              type: string
+              nullable: false
+              enum:
+              - OPEN
+              - REFUND
+              - RESOLVED
+              - REJECTED
+              example: OPEN
+            created_at:
+              description: |- 
+                Fecha y hora en la que se inicio la aclaración, en formato de milisegundos y UTC.
+                    
+                La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+              type: integer
+              nullable: false
+              format: int64
+              minimum: 0
+              example: 1667353629
+        _links:
+          description: |-
+            Lista de recursos relacionados a la orden.
+            Los estándares utilizdos para operar bajo el modelo de HATEOAS son: https://stateless.group/hal_specification.html, https://datatracker.ietf.org/doc/html/draft-kelly-json-hal y https://www.rfc-editor.org/rfc/rfc8288
+            
+            Los recursos soportados actualmente para regresar dentro de la propiedad _link son:
+            * refund - Regresa la URI del reembolso en caso de existir para la orden.
+          type: object
+          nullable: true
+          properties:
+            refund:
+              description: Información actual del relmbolo en caso de tener algún reembolso registrado.
+              type: object
+              required:
+              - href
+              nullable: false
+              properties:
+                href:
+                  description: URI del reembolso.
+                  type: string
+                  nullable: false
+                  maxLength: 300
+                  example: https://api.zenki.fi/v1/pay/orders/f325da2b8e3f476caa07e039406e72f0/refunds/e40dbc7450f6
+        payment_signature:
+          description: Detalle del proceso de una aclaración.
+          type: string
+          nullable: false
+          example: 'PsFEJpunOmvPmOiRyfyBWnrKpsZ4FNSSTp1s6rCIvV6YIe+tJC7RxwgXgaVVMJHikyMjJXuZIiIB0lSs0nPe0ln50hDAk+IFz6j06wEbj7rzG4ZLQMOYaHFnNLjO/KQlxm6IUhhkZ5LtbaKChOw7+VOTM0fJBlvtWlVxl0TYS3qc2JOvY2f5/3892hKus+Qj3sSX56Y6xaHv0hHvV7MZlP9Mnvlg/AYlh03MukpvhRiIPfdOQeknWYwNuU6OZjNeO782bEbi7c8wKB3m3Ckjh+WkJ+l2nJyU6tHFBg3Lyg28xy6wWf+UfoyHBx2kHTVzrP5i0ybQPNEl0Gb95ORTb61UoZCnXDrVD4SRxHFd//V0qN1eT233hgof65eAAHu0k+t0OVJWuVrfk2olHlFBDo1DTyhiwAmX74o57a+8YxdrmMbxRmuVTb8iXrtcihxcsLINC1FhT3QfQdXDhpS+WYILcgpQ0SRFHKCAHP6HjFG6T2hO4NnG6rNut6DsjWCIZI8MJdZSMYDQ+n7wJ63jzKGc1NW83U5cUWtZhhBwUo221U9/3XXMBb3bnY8Ej5gHreRodXCyOowjutP+XICwevvuJa4BAEYJ6DJmqxWBL1pBcNKoLTtGqYzXJg1HFZ2qPzdR9jZSsk15q+Wg/BlRXaeIe0WA495w1FwPS+SRjU0='
+
+#---------------------------------------------
+#  Object: Traking
+#---------------------------------------------
+    Traking:
+      type: object
+      required:
+        - zenki_tracking_id
+        - courier_type
+      properties:
+        zenki_tracking_id:
+          description: Identificador único de rastreo generado por Zenkipay.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: d65a558951d3
+        courier_type:
+          description: |- 
+            Tipo de mensajeria utilizada para realizar la entrega del producto o servicio.
+            
+            Posibles valores:
+            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo tracking_id.
+            * INTERNAL - Si se utiliza la infraestructura proía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courier_name.
+          type: string
+          nullable: false
+          enum:
+          - EXTERNAL
+          - INTERNAL
+          example: EXTERNAL
+        tracking_id:
+          description: Identificador único de rastreo generado por una mensajería.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: d65a558951d3
+        courier_name:
+          description: Nombre de la mensajeria interna del comercio utilizada para entregar el servicio o producto.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: Mensajeria interna - Zapatería Hermanos
+        external_courier:
+          description: Detalle de la mensajería utilizada para el envío.
+          type: object
+          required:
+          - key
+          - country_code_iso2
+          nullable: false
+          properties:
+            key:
+              description: |- 
+                Identificador único de la mensajería proporcioinado por Zenkipay:
+                
+                Ejemplo de algunas mensajerías:
+                  * 190135  139Express  http://www.139express.com/
+                  * 190524  1688        https://www.1688.com/
+                  * 190659  17EXP       https://www.17-exp.com/
+                  * 190349  1TONG       http://www.1tongexpress.com/
+                
+                Para conocer la lista completa de mensajerías consulte: https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-mensajerias-soportadas
+              type: string
+              nullable: false
+              maxLength: 30
+              example: 100003
+            country_code_iso2:
+              description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
+              type: string
+              nullable: false
+              maxLength: 5
+              example: MX
+            url:
+              description: |-
+                Página web de la mensajería.
+                
+                Para conocer la lista completa de mensajerías consulte: https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-mensajerias-soportadas
+              type: string
+              nullable: true
+              maxLength: 255
+              example: http://www.fedex.com/
+            name:
+              description: |-
+                Nombre de la mensajería.
+                
+                Para conocer la lista completa de mensajerías consulte: https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-mensajerias-soportadas
+              type: string
+              nullable: true
+              maxLength: 50
+              example: Fedex
+            name_zh_cn:
+              description: |-
+                Nombre de la mensajería.
+                
+                Para conocer la lista completa de mensajerías consulte: https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-mensajerias-soportadas
+              type: string
+              nullable: true
+              maxLength: 50
+              example: Fedex
+            name_zh_hk:
+              description: |-
+                Nombre de la mensajería.
+                      
+                Para conocer la lista completa de mensajerías consulte: https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-mensajerias-soportadas
+              type: string
+              nullable: true
+              maxLength: 50
+              example: Fedex
+#---------------------------------------------
+#  Object: TrakingEvents
+#---------------------------------------------
+    TrakingEvents:
+      description: Lista de eventos registrados del proceso de entrega del paquete al comprador.
+      type: array
+      nullable: false
+      items:
+        type: object
+        required:
+          - status
+          - location
+          - description
+        properties:
+          status:
+            description: |- 
+              Estados del proceso de entrega.
+              
+              Posibles valores:
+              * TRANSIT              - En proceso de entrega.
+              * DELIVERY             - Se ha entregado el producto o servicio.
+              * AVAILABLE_FOR_PICKUP - El producto o servicio está listo para que el comprador pueda recogerlo en el sitio del comercio.
+              * CANCELED             - Se ha cancelado el envío.
+              * FAILED               - Hubo algún problema al intentar entregar el producto o servicio.
+            type: string
+            enum:
+            - TRANSIT 
+            - DELIVERY
+            - AVAILABLE_FOR_PICKUP
+            - CANCELED
+            - FAILED
+            nullable: false
+            example: FAILED
+          location:
+            description: lugar donde se detona el evento y que se encuentra el paquete.
+            type: string
+            nullable: false
+            maxLength: 255
+            example: Lugar.
+          description:
+            description: Detalle del error por el cual no se pudo completar el envíoo si se entrego correctamente el producto o servicio, indicar quien lo recibió.
+            type: string
+            nullable: false
+            maxLength: 255
+            example: Dirección inválida.
+          created_at:
+            description: |- 
+              Fecha y hora en la que se registro el evento de rastreo, en formato de milisegundos y UTC.
+              
+              La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+            type: integer
+            nullable: false
+            format: int64
+            minimum: 0
+            example: 1667353629
+
+#---------------------------------------------
+#  Object: Refund
+#---------------------------------------------
+    Refund:
+      description: Detalle del reembolso registrado
+      type: object
+      required:
+        - zenki_refund_id
+        - amount
+        - reason
+        - currency
+        - crypto_payment
+        - status
+        - placed_at
+      properties:
+        zenki_refund_id:
+          description: Identificador único del reembolso generado por Zenkipay.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: e40dbc7450f6
+        reason:
+          description: Motivo o razón del reembolso.
+          type: string
+          nullable: false
+          maxLength: 100
+          example: Ya no tenía en inventario.
+        fiat_original_payment:
+          description: Detalle del pago original realizado por el comprador.
+          type: object
+          required:
+            - amount
+            - currency
+          properties:
+            amount: 
+              description: Monto del reembolso, parcial o total.
+              type: number
+              nullable: false
+              format: double
+              minimum: 0
+              example: 10
+            currency_code_iso3:
+              description: 'Identificador único de la moneda del país, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html'
+              type: string
+              nullable: false
+              maxLength: 5
+              example: USD
+        crypto_payment:
+          $ref: '#/components/schemas/CryptoPayment'
+        status:
+          description: |-
+            Estado del reembolso
+            
+            Posibles valroes:
+            * PENDING         - En espera a que se aplique el reemboslo.
+            * AWAITING_REFUND - Se ha recibido una primera confirmación por la red de blockchain, está en la espera de tener las confirmaciones requeridas.
+            * REFUNDED        - Se ha realizado el reembolso del producto o servicio al comprador.
+            * FAILED          - Ha surgido un problema al momento de realizar el reembolso.
+          type: string
+          nullable: false
+          enum:
+            - PENDING
+            - AWAITING_REFUND
+            - REFUNDED
+            - FAILED
+          example: PENDING
+        placed_at:
+          description: |- 
+            Fecha y hora cuando el comercio mando el reembolso a Zenkipay, en formato de milisegundos y UTC.
+                  
+            La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+          type: integer
+          nullable: false
+          format: int64
+          minimum: 0
+          example: 1667353629
+          
+#---------------------------------------------
+#  Object: Webhook
+#---------------------------------------------
+    Webhook:
+      description: Estructura base de la notificación que recibirá el comercio, esta notificación manejará diferentes tipos de eventos para su procesamiento. El contenido del mensaje estará en formato string para que se pueda interpretar de acuerdo al tipo de evento recibido por parte del comercio desde Zenkipay.
+      type: object
+      required:
+      - event_type
+      - flat_data
+      - timestamp
+      nullable: false
+      properties:
+        event_type:
+          description: |-
+            Conjunto de eventos que puede recibir el comercio.
+            
+            Posibles valores:
+            * order.pay    - Notificación de evento cuando una orden se ha pagado correctamente por el comprador.
+            * order.refund - Notificación de evento cuando un reeembolso es efectuado por parte del comercio para el comprador.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: order.pay
+        flat_data:
+          description:  |-
+            Datos del evento.
+            
+            Posibles valores:
+            * Se va a recibir el objeto Order cuando se notifique el evento order.pay
+            * Se va a recibir el objeto Refund cuando se notifique el evento order.refund
+          type: string
+          nullable: false
+          example: "{\"version\":\"v1.1.0\",\"zenki_order_id\":\"f325da2b8e3f476caa07e039406e72f0\",\"order_id\":\"f3359498592b\",\"cart_id\":\"96a17044f0e3\",\"type\":\"MIXED\",\"country_code_iso2\":\"MX\",\"status\":\"PENDING\",\"created_at\":1667353629,\"shopper\":{\"id\":\"f3359498592b\",\"name\":\"Juanito\",\"phone\":\"442536789\",\"email\":\"juanito@gmail.com\"},\"breakdown\":{\"currency_code_iso3\":\"USD\",\"total_items_amount\":200,\"shipment_amount\":50,\"subtotal_amount\":250,\"taxes_amount\":10,\"local_taxes_amount\":1.6,\"import_costs\":0,\"discount_amount\":0,\"additional_charges\":{\"donation\":1.1234},\"grand_total_amount\":262.7234},\"payment_info\":{\"exchange_rate\":{\"from\":\"MXN\",\"to\":\"USD\",\"value\":20,\"amount\":50,\"timestamp\":1667353629},\"crypto_love\":{\"discount_percentage\":1,\"discount_amount\":0.5,\"final_amount\":49.5,\"currency\":\"USD\"},\"crypto_payment\":{\"amount\":\"0.038282960887513325\",\"currency\":\"ETH\",\"blockchain\":\"BSC\",\"transaction_hash\":\"0xee8a3a5eb2a972785b7a56320682bbb843c29409c60dec2d25dbd3eaff91cf26\",\"network_scan_url\":\"https://etherscan.io/tx/0x3e86fd3c50dbf8e050124e28f33392ce4f4278a925d7c472b3e7ab12af0da115\"}},\"settlement_info\":{\"crypto_settlement\":{\"final_amount\":\"49.4\",\"currency\":\"USDC\"}},\"items\":[{\"external_id\":\"e40dbc7450f6\",\"quantity\":2,\"price\":10.33,\"name\":\"Libreta\",\"description\":\"Libretaderayas\",\"type\":\"WITH_CARRIER\",\"thumbnail_url\":\"https://cdn.tshirts.boutique/wp-content/uploads/2022/07/12213723/12100-105.jpg\",\"metadata\":{\"size\":\"L\",\"color\":\"red\"}}],\"metadata\":{\"tracking_id\":\"5514a95b0882\"},\"dispute\":{\"status\":\"OPEN\",\"created_at\":1667353629,\"resolution_request_type\":\"REQUEST_CONCILIATED\",\"resolution_request_at\":1667353629},\"claim\":{\"reason\":\"Seacaboelinventario\",\"status\":\"OPEN\",\"created_at\":1667353629},\"_links\":{\"refund\":{\"href\":\"https://api.zenki.fi/v1/pay/orders/f325da2b8e3f476caa07e039406e72f0/refunds/e40dbc7450f6\"}}}"
+
+#---------------------------------------------
+#  Object: Shopper
+#---------------------------------------------
+    Shopper:
+      description: Información del comprador.
+      type: object
+      nullable: true
+      required:
+      - email
+      properties:
+        id:
+          description: Identificador único del comprador generado por el comercio.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: f3359498592b
+        name:
+          description: Nombre del comprador
+          type: string
+          nullable: true
+          maxLength: 128
+          example: Juanito
+        phone:
+          description: Número telefónico del comprador.
+          type: string
+          nullable: true
+          maxLength: 128
+          example: 442536789
+        email:
+          description: Correo electrónico del comprador usaado para notificar el estado de su procedo de envío y entrega.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: juanito@gmail.com
+
+#---------------------------------------------
+#  Object: Breakdown
+#---------------------------------------------
+    Breakdown:
+      description: Resumen de los montos del carrito de compra.
+      type: object
+      required:
+      - currency_code_iso3
+      - total_items_amount
+      - shipment_amount
+      - subtotal_amount
+      - taxes_amount
+      - grand_total_amount
+      nullable: false
+      properties:
+        currency_code_iso3:
+          description: 'Código único de la moneda del país, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html.'
+          type: string
+          nullable: false
+          maxLength: 5
+          example: USD
+        total_items_amount:
+          description: Suma del total del costo de los items.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 200
+        shipment_amount:
+          description: Costo de envío, en caso de no aplicar su valor debe ser 0.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 50
+        subtotal_amount:
+          description: Suma del total_items_amount más shipment_amount.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 250
+        taxes_amount: 
+          description: Impuestos, en caso de no aplicar su valor debe ser 0.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 10
+        local_taxes_amount:
+          description: Impuestos locales, en caso de no aplicar su valor debe ser 0.
+          type: number
+          nullable: true
+          format: double
+          minimum: 0
+          example: 1.6
+        import_costs:
+          description: Costos de importación, en caso de no aplicar su valor debe ser 0.
+          type: number
+          nullable: true
+          format: double
+          minimum: 0
+          example: 0
+        discount_amount:
+          description: Descuento de tu comercio, en caso de no aplicar su valor debe ser 0.
+          type: number
+          nullable: true
+          format: double
+          minimum: 0
+          example: 0
+        additional_charges:
+          description: Cargos adicionales, se compone de un objeto llave/valor que comprende la descripción del cargo/el monto respectivamente.
+          nullable: true
+          additionalProperties:
+            type: string
+          example:
+            donation: 1.1234
+        grand_total_amount:
+          description: Suma de subtotal_amount, taxes_amount, local_taxes_amount, import_costs y cada valor de additional_charges menos discoun_amount.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 262.7234
+
+#---------------------------------------------
+#  Object: Item
+#---------------------------------------------
+    Item:
+      description: Información de un producto o servicio.
+      type: object
+      required:
+      - quantity
+      - price
+      - name
+      properties:
+        external_id:
+          description: Identificador único del producto o servicio asignado por el comercio.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: e40dbc7450f6
+        quantity:
+          description: Número total de productos o servicios del pedido del mismo tipo.
+          type: integer
+          nullable: false
+          format: int64
+          minimum: 0
+          example: 2
+        price:
+          description: Precio total de productos o servicios del pedido del mismo tipo.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 10.33
+        name:
+          description: Nombre corto del producto o servicio.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: Libreta
+        description:
+          description: Descripción del producto o servicio.
+          type: string
+          nullable: true
+          maxLength: 255
+          example: Libreta de rayas
+        type:
+          description: |-
+            Indica el modelo para la entrega del producto o servicio.
+            
+            Posibles valores:
+            * WITH_CARRIER    - Para la entrega del producto o servicio se va a utilizar un carrier de envío.
+            * WITHOUT_CARRIER - Para la entrega del producto o servicio NO se va a utilizar un carrier de envío.
+          type: string
+          nullable: false
+          enum:
+            - WITH_CARRIER
+            - WITHOUT_CARRIER
+          example: WITH_CARRIER
+        thumbnail_url:
+          description: URL de la imagen del producto (miniatura).
+          type: string
+          nullable: true
+          maxLength: 255
+          example: 'https://cdn.tshirts.boutique/wp-content/uploads/2022/07/12213723/12100-105.jpg'
+        metadata:
+          description: Información complementaria del producto o servicio que se requiere informar o tener en el sistema de Zenkipay.
+          nullable: true
+          additionalProperties:
+            type: string
+          example:
+            size: L
+            color: red
+
+#---------------------------------------------
+#  Object: CryptoPayment
+#---------------------------------------------
+    CryptoPayment:
+      description: Resumen del monto pagado en crypto moenda por el comprador
+      type: object
+      required:
+      - amount
+      - currency
+      - blockchain
+      nullable: false
+      properties:
+        amount:
+          description: Monto del pago en cripto moneda.
+          type: string
+          nullable: false
+          maxLength: 64
+          example: 0.038282960887513325
+        currency:
+          description: Código de la cripto moneda soportadas por Zenkipay, véase https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-criptomonedas-soportadas
+          type: string
+          nullable: false
+          maxLength: 5
+          example: ETH
+        blockchain:
+          description: |-
+            Listado de blockchains soportadas.
+            
+            Posibles valroes:
+            * Bitcoin
+            * Ethereum
+            * Litecoin
+            * Bitcoin Cash
+            * Solana
+            * Algorand
+            * Polygon
+            * Arbitrum
+            * BSC
+            * Avalanche
+            * Ripple
+            * Terra
+            * Cardano
+            * Polkadot
+            * Tron
+            * Stellar
+            * Ethereum Classic
+            * Hedera Hashgraph
+            * Tezos
+            * EOSIO
+            * Fantom Opera
+            * ZCash
+            * Celo
+            * Dash
+            * XDC Network
+          type: string
+          nullable: false
+          maxLength: 30
+          example: BSC
+        transaction_hash:
+          description: Identificador único de la transacción, proprocionado por la blockchain.
+          type: string
+          nullable: true
+          maxLength: 300
+          example: '0xee8a3a5eb2a972785b7a56320682bbb843c29409c60dec2d25dbd3eaff91cf26'
+        network_scan_url:
+          description: URL para consultar el estado de la transacción directamente en la blockchain.
+          type: string
+          nullable: true
+          maxLength: 300
+          example: 'https://etherscan.io/tx/0x3e86fd3c50dbf8e050124e28f33392ce4f4278a925d7c472b3e7ab12af0da115'
+
+#---------------------------------------------
+#  Object: Merchant
+#---------------------------------------------
+    Merchant:
+      description: Resumen del monto pagado en crypto moenda por el comprador
+      type: object
+      required:
+      - merchant_info
+      - integration_config
+      - crypto_love_percentage
+      - crypto_currencies
+      - escrow_config
+      nullable: false
+      properties:
+        merchant_info:
+          description: Información general del comercio.
+          type: object
+          required:
+          - commercial_name
+          - account_type
+          - kyc_status
+          - integration_status
+          nullable: false
+          properties:
+            commercial_name:
+              description: Nombre comercial del comercio que registro cuando se creo su cienta en Zenki.
+              type: string
+              nullable: false
+              maxLength: 300
+              example: Zapaterías Juanito
+            legal_name:
+              description: Nombre legal del comercio que registro durante el proceso de activación de cuenta en Zenki.
+              type: string
+              nullable: false
+              maxLength: 300
+              example: Grupo Juanito y Asociados S.A. de C.V.
+            account_type:
+              description: |-
+                Tipo de cuenta del comercio.
+                
+                Posibles valroes:
+                * Personal - Persona natural física con actividad comercial
+                * Business - Empresa con actividad comercial
+              type: string
+              nullable: false
+              maxLength: 30
+              example: Business
+            kyc_status:
+              description: |-
+                Estado del proceso documental en el que se encuentra el comercio.
+                
+                Posibles valores:
+                * PENDING  - Indica que aún falta por enviar información o documentos para concluir su proceso de KYC.
+                * APPROVED - Se ha finalizado el proceso de registro documental y el staff de Zenki ha autorizado al comercio para operar.
+              type: string
+              nullable: false
+              enum:
+                - PENDING
+                - APPROVED
+              example: APPROVED
+            integration_status:
+              description: |-
+                Estado del proceso de integración en el que se encuentra el comercio.
+                
+                Posibles valores:
+                * PENDING   - Indica que el comercio aún no ha concluido su proceso de integración técnica y aún no está en ambiente productivo.
+                * COMPLETED - Indica que el comercio ha concluido su proceso de integración técnica y ya se encuentra en producción o live.
+              type: string
+              nullable: false
+              enum:
+                - PENDING
+                - COMPLETED
+              example: COMPLETED
+        integration_config:
+          description: Configuraciones de las integraciones del comercio
+          type: object
+          required:
+          - plugins
+          nullable: false
+          properties:
+            plugins:
+              description: Configuración de cada plugin activa del comercio.
+              type: array
+              nullable: false
+              items:
+                description: Configuración de un plugin activo.
+                type: object
+                required:
+                - name
+                - client_id
+                nullable: false
+                properties:
+                  name:
+                    description: Nombre del plugin activo.
+                    type: string
+                    nullable: false
+                    maxLength: 64
+                    example: api
+                  client_id:
+                    description: Key del plugin activo.
+                    type: string
+                    nullable: false
+                    maxLength: 128
+                    example: b6026f861fd41a94c3389d54293de9d04bde6f7c
+        crypto_love_percentage:
+          description: Descuento en porcentaje otorgado por el comercio al comprador en su compra por activar crypto love.
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 1
+        crypto_assets:
+          description: Listado de cripto monedas soportadas
+          type: array
+          nullable: false
+          items:
+            description: Configuración por casa cripto moenda.
+            type: object
+            required:
+            - currency
+            - active
+            nullable: false
+            properties:
+              currency:
+                description: Idnetificador de la moneda soportada, véase https://developer.zenki.fi/global-v1/docs/zenkipay-recursos-catalogos-criptomonedas-soportadas
+                type: string
+                nullable: false
+                maxLength: 64
+                example: BTC
+              active:
+                description: Indica si la cripto moenda esta activa o no.
+                type: boolean
+                nullable: false
+                example: true
+        escrow_config:
+          description: Resumen del monto pagado en crypto moenda por el comprador
+          type: object
+          required:
+          - amount
+          - currency
+          - blockchain
+          nullable: false
+          properties:
+            order_type:
+              description: |-
+                Indica el modelo para la entrega del producto o servicio.
+                
+                Posibles valores:
+                * WITH_CARRIER    - Para la entrega del producto o servicio se va a utilizar un carrier de envío.
+                * WITHOUT_CARRIER - Para la entrega del producto o servicio NO se va a utilizar un carrier de envío.
+                * MIXED           - Para la entrega de los productos o servicios una parteutilizará un carrier de envío y otra parte se entregara sin utilizar un carrier de envío.
+              type: string
+              nullable: false
+              enum:
+                - WITH_CARRIER
+                - WITHOUT_CARRIER
+                - MIXED
+              example: MIXED
+            shopper_notification:
+              description: Cantidad de horas que se va a esperar para que el shopper notifique a Zenki de que recibió correctamente los servicios. El tiempo está expresado en horas.
+              type: integer
+              nullable: false
+              format: int64
+              minimum: 0
+              example: 6
+            time_wait_to_approval:
+              description: Cantidad de horas que se va a esperar Zenki para tener confirmación por parte del comprador antes de aprovar el pago y liberar los fondos al comercio. El tiempo está expresado en horas.
+              type: integer
+              nullable: false
+              format: int64
+              minimum: 0
+              example: 24
+              
+#---------------------------------------------
+#  Object: ErrorResponse
+#---------------------------------------------
+    ErrorResponse:
+      type: object
+      required:
+        - request_id
+        - title
+        - error_code
+        - human_message
+        - timestamp
+      properties:
+        request_id:
+          description: Identificador único del error generado por Zenkipay por cada petición enviada al API.
+          type: string
+          nullable: false
+          maxLength: 128
+          example: 352b648e2cd7
+        title:
+          description: Descripción corta del error.
+          type: string
+          nullable: false
+          maxLength: 100
+          example: invalid_request
+        error_code:
+          description: 'Código de error que ayuda a identificar el motivo del problema al momento de procesar la petición, este código estará basado en los códigos HTTP actualmente soportados por la especificación: https://www.rfc-editor.org/rfc/rfc9110#section-15'  
+          type: integer
+          nullable: false
+          format: int64
+          minimum: 0
+          maximum: 999
+          example: 401
+        human_message:
+          description: Mensaje de error recomendado para mostrar a los compradores, este mensaje está soportado para los lenguajes de ingles y español.
+          type: string
+          nullable: false
+          maxLength: 300
+          example: Bad Request
+        timestamp: 
+          description: |- 
+            Fecha y hora en formato de milisegundos y UTC para identificar las diferentes peiticiones en el tiempo los diferentes que han tenido errores.
+            
+            La época Unix (o Unix time o POSIX time o Unix timestamp) es el número de segundos transcurridos desde el 1 de enero de 1970 (medianoche UTC/GMT), sin contar los segundos bisiestos (en ISO 8601: 1970-01-01T00:00 :00Z)
+          type: integer
+          nullable: false
+          format: int64
+          minimum: 0
+          example: 1667353629
+
+#---------------------------------------------
+#  Object: RequestTokenOAuth2
+#---------------------------------------------
+    RequestTokenOAuth2:
+      type: object
+      required:
+        -  client_id
+        -  client_secret
+        -  grant_type
+      properties:
+        client_id:
+          description: API Key de Zenkipay debe obtenerse desde el portal de Zenkipay en la sección de seguridad
+          type: string
+          nullable: false
+          maxLength: 128
+          example: 4188918f7da1547d13e3
+        client_secret: 
+          description: Secret Key en Zenkipay debe obtenerse desde el portal de Zenkipay en la sección de seguridad
+          type: string
+          nullable: false
+          maxLength: 128
+          example: 4ed3872fccacc77ce842
+        grant_type: 
+          description: Tipo de permiso, para todas las operaciones realizadas en el API de Zenkipay desde el servidor del comercio se requiere enviar como grant type el valor 'client_credentials'
+          type: string
+          nullable: false
+          maxLength: 30
+          example: client_credentials
+
+#---------------------------------------------
+#  Object: TokenOAuth2
+#---------------------------------------------
+    TokenOAuth2:
+      type: object
+      required:
+        -  access_token   
+        -  token_type
+        -  expires_in
+        -  refresh_token   
+        -  refresh_expires_in
+        -  scope
+      properties:
+        access_token:  
+          description: El access token que será requerido para enviar en todas las peticiones al API de Zenki
+          type: string
+          nullable: false
+          maxLength: 1024
+          example: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICItNUlsX2I0cUktdWFvaEI3d244UHY3WEM2UEktU3BNbmZCRnlJZUx6QTJNIn0.eyJleHAiOjE1OTQyMTY0OTQsImlhdCI6MTU5NDIxNjE5NCwianRpIjoiZjVmNTBjMzEtNWIwNC00OWQ2LTljYmMtM2YwMWU5OTg5ZWQxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL2FwcHNkZXZlbG9wZXJibG9nIiwic3ViIjoiNTlmODFhMzYtYTIyMC00ZmE4LTlhZWEtMzRlN2JhNjY4OTAxIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGhvdG8tYXBwLWNsaWVudC1jcmVkZW50aWFscyIsInNlc3Npb25fc3RhdGUiOiI3NTAyY2YzMS1iMjEwLTQ3NTQtYjkxOS0wN2UxZDg0OTNmYTMiLCJhY3IiOiIxIiwic2NvcGUiOiJlbWFpbCIsImNsaWVudElkIjoicGhvdG8tYXBwLWNsaWVudC1jcmVkZW50aWFscyIsImNsaWVudEhvc3QiOiIxMjcuMC4wLjEiLCJjbGllbnRBZGRyZXNzIjoiMTI3LjAuMC4xIn0.fQVsLpQJchcofA18FOSr0gtjeo01s9bMFF1ewsI-trrzzNL28QABmm_rsb4-p0iw5fGG3-bEInFe-Owxm9sZbQ_O7je_BVMDrlJEs-bAY5cLIQWVqy3P5xCsyFt-F6y89LAOCUCGI127W18zoUagLAoi5bGCIgxKled-MYRK8MQ-PcZzYCp5FkPFMv6Wd8I5m6TZJ6xK0eG79LVDPqj-s9YGfjY_n64uiT9VneYHG261SisgZ978ZMF-gkjit9CsSTQEW2cBlyeriy133s0E0ycvybLwnHYsGzRs5k8xhgqa3ZYovtZeK2SWARoNSXWQjUCBcndT9teWcZSgQxPIzw'
+        token_type: 
+          description: El access token que sera requerido para enviar como cabecera en todas las peticiones al API de Zenki
+          type: string
+          nullable: false
+          example: Bearer
+        expires_in: 
+          description: Tiempo en segundo de expiración del access token
+          type: integer
+          nullable: false
+          example: 1800
+
+#---------------------------------------------
+#  Object: AuthenticationErrorResponse
+#---------------------------------------------
+    AuthenticationErrorResponse:
+      type: object
+      required:
+        - error
+        - error_description
+      properties:
+        error:
+          description: Nombre del error ocurrido
+          type: string
+          nullable: false
+          maxLength: 30
+          example: unauthorized_client
+        error_description:
+          description: Descripción del error ocurrido
+          type: string
+          nullable: false
+          maxLength: 30
+          example: Invalid identity
+
+#---------------------------------------------
+#  ESQUEMA DE SEGURIDAD
+#---------------------------------------------
+  securitySchemes:
+    JWTAuth:
+      type: http
+      description: Esquema de seguridad utilizado para llamar a los servicios del API Zenkipay.
+      scheme: bearer
+      bearerFormat: ACCESS_TOKEN
+    oAuth2ClientCredentials:
+      type: oauth2
+      description: Esquema de seguridad para generar un token de acceso que permita llamar posteriormente a los servicios del API Zenkipay.
+      flows:
+        clientCredentials:
+          tokenUrl: /v1/oauth/tokens
+          scopes: {}
