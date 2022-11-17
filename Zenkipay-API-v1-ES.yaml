@@ -782,7 +782,6 @@ paths:
             type: string
           description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
           example: 4188918f7da1547d13e3
-        - in: header
 #        - in: header
 #          name: X-ZENKI-PLUGIN-VERSION
 #          required: false
