@@ -1803,7 +1803,7 @@ components:
           maxLength: 5
           example: USD
         totalItemsAmount:
-          description: Sum of the total cost of the items.
+          description: Sum of the total cost of the items (quantity * unitPrice).
           type: number
           nullable: false
           format: double
@@ -1890,20 +1890,13 @@ components:
           format: int64
           minimum: 0
           example: 2
-        unitPricePerItem:
+        unitPrice:
           description: Unit price of the product or service.
           type: number
           nullable: false
           format: double
           minimum: 0
           example: 5.10
-        totalPrice:
-          description: Total price of products or services of the order of the same type (quantity * unitPricePerItem).
-          type: number
-          nullable: false
-          format: double
-          minimum: 0
-          example: 10.20
         name:
           description: Short name of the product or service.
           type: string
