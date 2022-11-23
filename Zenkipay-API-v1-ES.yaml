@@ -47,8 +47,8 @@ paths:
   '/v1/oauth/tokens':
     post:
       operationId: createToken
-      summary: Crea un token de autenticación en Zenki
-      description: Esta peticón debe ser enviada cada vez que se requiera generar un token para consumir los servicios de Zenki.
+      summary: Crea un token de autentización en Zenki
+      description: Esta peticón debe ser enviada cada vez que se requiera generar un token para consumir los servicios de Zenki
       externalDocs:
         url: 'https://developer.zenki.fi/'
         description: >-
@@ -57,6 +57,8 @@ paths:
       parameters: []
       tags:
         - Autenticación y autorización
+      security:
+        - oAuth2ClientCredentials: []
       requestBody:
         description: Parámetros para creación de token OAuth 2
         content:
@@ -936,9 +938,9 @@ components:
       type: object
       required:
         - version
-        - order_id
+        - orderId
         - type
-        - country_code_iso2
+        - countryCodeIso2
         - breakdown
         - items
       properties:
@@ -948,13 +950,13 @@ components:
           nullable: false
           maxLength: 9
           example: v1.0.0
-        order_id:
+        orderId:
           description: Identificador único de la orden generado por el comercio.
           type: string
           nullable: true
           maxLength: 128
           example: f3359498592b
-        cart_id:
+        cartId:
           description: Identificador único del carrito de compra que permite identificar la compra de uno o varios productos o servicios.
           type: string
           nullable: true
@@ -975,7 +977,7 @@ components:
             - WITHOUT_CARRIER
             - MIXED
           example: MIXED
-        country_code_iso2:
+        countryCodeIso2:
           description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
           type: string
           nullable: false
@@ -999,7 +1001,7 @@ components:
           additionalProperties:
               type: string
           example: 
-            tracking_id: 5514a95b0882
+            trackingId: 5514a95b0882
             
 #---------------------------------------------
 #  Object: AddTraking
@@ -1007,28 +1009,28 @@ components:
     AddTraking:
       type: object
       required:
-        - courier_type
+        - courierType
       properties:
-        courier_type:
+        courierType:
           description: |- 
             Tipo de mensajeria utilizada para realizar la entrega del producto o servicio.
             
             Posibles valores:
-            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo tracking_id.
-            * INTERNAL - Si se utiliza la infraestructura propía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courier_name.
+            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo trackingId.
+            * INTERNAL - Si se utiliza la infraestructura propía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courierName.
           type: string
           nullable: false
           enum:
           - EXTERNAL
           - INTERNAL
           example: EXTERNAL
-        tracking_id:
+        trackingId:
           description: Identificador único de rastreo generado por una mensajería.
           type: string
           nullable: false
           maxLength: 128
           example: d65a558951d3
-        courier_name:
+        courierName:
           description: Nombre de la mensajeria interna del comercio utilizada para entregar el servicio o producto.
           type: string
           nullable: false
@@ -1099,12 +1101,12 @@ components:
       description: Objeto que representa la información detallada de una orden.
       type: object
       required:
-        - zenki_order_id
+        - zenkiOrderId
         - version
         - type
-        - country_code_iso2
+        - countryCodeIso2
         - status
-        - created_at
+        - createdAt
         - breakdown
         - items
       properties:
@@ -1114,19 +1116,19 @@ components:
           nullable: false
           maxLength: 9
           example: v1.0.0
-        zenki_order_id:
+        zenkiOrderId:
           description: Identificador único de la orden generado por Zenkipay.
           type: string
           nullable: false
           maxLength: 128
           example: f325da2b8e3f476caa07e039406e72f0
-        order_id:
+        orderId:
           description: Identificador único de la orden generado por el comercio.
           type: string
           nullable: false
           maxLength: 128
           example: f3359498592b
-        cart_id:
+        cartId:
           description: Identificador único del carrito de compra que permite identificar la compra de uno o varios productos o servicios.
           type: string
           nullable: false
@@ -1147,7 +1149,7 @@ components:
             - WITHOUT_CARRIER
             - MIXED
           example: MIXED
-        country_code_iso2:
+        countryCodeIso2:
           description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
           type: string
           nullable: false
@@ -1190,7 +1192,7 @@ components:
             - COMPLETED
             - SETTLED
           example: PENDING
-        created_at:
+        createdAt:
           description: |- 
             Fecha y hora cuando Zenkipay recibió la solicitud para crear la orden, en formato de milisegundos y UTC.
             
@@ -1205,17 +1207,17 @@ components:
         #-[Objeto breakdown]-
         breakdown:
           $ref: '#/components/schemas/Breakdown'
-        #-[Objeto payment_info]-
-        payment_info:
+        #-[Objeto paymentInfo]-
+        paymentInfo:
           description: Información del pago
           type: object
           required:
-          - exchange_rate
-          - crypto_love
-          - crypto_payment
+          - exchangeRate
+          - cryptoLove
+          - cryptoPayment
           nullable: true
           properties:
-            exchange_rate:
+            exchangeRate:
               description: Resumen del tipo de cambio usado para el pago, desde la moneda local a USD
               type: object
               required:
@@ -1261,17 +1263,17 @@ components:
                   format: int64
                   minimum: 0
                   example: 1667353629
-            crypto_love:
+            cryptoLove:
               description: Resumen del descuento realizado a la compra por el uso de crypto love.
               type: object
               required:
-              - discount_percentage
-              - discount_amount
-              - final_amount
+              - discountPercentage
+              - discountAmount
+              - finalAmount
               - currency
               nullable: false
               properties:
-                discount_percentage:
+                discountPercentage:
                   description: Descuento en porcentaje otorgado por el comercio al comprador en su compra por activar crypto love.
                   type: number
                   nullable: false
@@ -1279,14 +1281,14 @@ components:
                   minimum: 0
                   maximum: 100
                   example: 1
-                discount_amount:
+                discountAmount:
                   description: Descuento en monto otorgado por el comercio al comprador en su compra por activar crypto love en USD.
                   type: number
                   nullable: false
                   format: double
                   minimum: 0
                   example: 0.5
-                final_amount:
+                finalAmount:
                   description: Monto del pago despues del descuento en USD.
                   type: number
                   nullable: false
@@ -1299,25 +1301,25 @@ components:
                   nullable: false
                   maxLength: 5
                   example: USD
-            crypto_payment:
+            cryptoPayment:
               $ref: '#/components/schemas/CryptoPayment'
-        #-[Objeto settlement_info]-
-        settlement_info:
+        #-[Objeto settlementInfo]-
+        settlementInfo:
           description: Información de la orden para la liquidación a comercio
           type: object
           required:
-          - crypto_settlement
+          - cryptoSettlement
           nullable: true
           properties:
-            crypto_settlement:
+            cryptoSettlement:
               description: Detalle del pago a realizar en cripto moneda
               type: object
               required:
-              - final_amount
+              - finalAmount
               - currency
               nullable: false
               properties:
-                final_amount:
+                finalAmount:
                   description: Monto pagado en USD.
                   type: string
                   nullable: false
@@ -1342,14 +1344,14 @@ components:
           additionalProperties:
               type: string
           example: 
-            tracking_id: 5514a95b0882
+            trackingId: 5514a95b0882
         #-[Object: DISPUTE]-
         dispute:
           description: Detalle del proceso de una disputa.
           type: object
           required:
           - status
-          - created_at
+          - createdAt
           nullable: false
           properties:
             status:
@@ -1367,7 +1369,7 @@ components:
               - REFUND
               - RESOLVED
               example: OPEN
-            created_at:
+            createdAt:
               description: |- 
                 Fecha y hora en la que se inicio la disputa, en formato de milisegundos y UTC.
                     
@@ -1377,7 +1379,7 @@ components:
               format: int64
               minimum: 0
               example: 1667353629
-            resolution_request_type:
+            resolutionRequestType:
               description: |- 
                 Tipo de apoyo solicitado a staff de Zenki.
                 
@@ -1390,7 +1392,7 @@ components:
               - REQUEST_REFUND 
               - REQUEST_CONCILIATED
               example: REQUEST_CONCILIATED
-            resolution_request_at:
+            resolutionRequestAt:
               description: |- 
                 Fecha y hora en la que se finalizo la disputa y se dió una resolución final del proceso al comprador, en formato de milisegundos y UTC.
                     
@@ -1406,9 +1408,8 @@ components:
           description: Detalle del proceso de una reclamación, cuando se realiza un pago y Zenkipay no puede identificarlo y asocialo a la orden para el pago.
           type: object
           required:
-          - zenki_claim_id
           - status
-          - created_at
+          - createdAt
           nullable: false
           properties:
             reason:
@@ -1434,7 +1435,7 @@ components:
               - RESOLVED
               - REJECTED
               example: OPEN
-            created_at:
+            createdAt:
               description: |- 
                 Fecha y hora en la que se inicio la aclaración, en formato de milisegundos y UTC.
                     
@@ -1467,7 +1468,7 @@ components:
                   nullable: false
                   maxLength: 300
                   example: https://api.zenki.fi/v1/pay/orders/f325da2b8e3f476caa07e039406e72f0/refunds/e40dbc7450f6
-        payment_signature:
+        paymentSignature:
           description: Firma de la información de la orden de pago para mostrar la modal.
           type: string
           nullable: false
@@ -1479,46 +1480,46 @@ components:
     Traking:
       type: object
       required:
-        - zenki_tracking_id
-        - courier_type
+        - zenkiTrackingId
+        - courierType
       properties:
-        zenki_tracking_id:
+        zenkiTrackingId:
           description: Identificador único de rastreo generado por Zenkipay.
           type: string
           nullable: false
           maxLength: 128
           example: d65a558951d3
-        courier_type:
+        courierType:
           description: |- 
             Tipo de mensajeria utilizada para realizar la entrega del producto o servicio.
             
             Posibles valores:
-            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo tracking_id.
-            * INTERNAL - Si se utiliza la infraestructura proía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courier_name.
+            * EXTERNAL - Si se utiliza alguna empresa de mensajería existente, se deberá indicar que el envío será externa y se deberá informar el campo trackingId.
+            * INTERNAL - Si se utiliza la infraestructura proía del comercio para realizar el envío, se deberá indicar que el envío será interno y se deberá informar el campo courierName.
           type: string
           nullable: false
           enum:
           - EXTERNAL
           - INTERNAL
           example: EXTERNAL
-        tracking_id:
+        trackingId:
           description: Identificador único de rastreo generado por una mensajería.
           type: string
           nullable: true
           maxLength: 128
           example: d65a558951d3
-        courier_name:
+        courierName:
           description: Nombre de la mensajeria interna del comercio utilizada para entregar el servicio o producto.
           type: string
           nullable: true
           maxLength: 128
           example: Mensajeria interna - Zapatería Hermanos
-        external_courier:
+        externalCourier:
           description: Detalle de la mensajería utilizada para el envío.
           type: object
           required:
           - key
-          - country_code_iso2
+          - countryCodeIso2
           nullable: false
           properties:
             key:
@@ -1536,7 +1537,7 @@ components:
               nullable: false
               maxLength: 30
               example: 100003
-            country_code_iso2:
+            countryCodeIso2:
               description: 'Identificador único del país, se utiliza la definición del estándar ISO_3166-1 a 2 caracteres véase: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 o https://www.iso.org/iso-3166-country-codes.html'
               type: string
               nullable: false
@@ -1560,7 +1561,7 @@ components:
               nullable: true
               maxLength: 50
               example: Fedex
-            name_zh_cn:
+            nameZhCn:
               description: |-
                 Nombre de la mensajería.
                 
@@ -1569,7 +1570,7 @@ components:
               nullable: true
               maxLength: 50
               example: Fedex
-            name_zh_hk:
+            nameZhHk:
               description: |-
                 Nombre de la mensajería.
                       
@@ -1623,7 +1624,7 @@ components:
             nullable: false
             maxLength: 255
             example: Dirección inválida.
-          created_at:
+          createdAt:
             description: |- 
               Fecha y hora en la que se registro el evento de rastreo, en formato de milisegundos y UTC.
               
@@ -1641,15 +1642,15 @@ components:
       description: Detalle del reembolso registrado
       type: object
       required:
-        - zenki_refund_id
+        - zenkiRefundId
         - amount
         - reason
         - currency
-        - crypto_payment
+        - cryptoPayment
         - status
-        - placed_at
+        - placedAt
       properties:
-        zenki_refund_id:
+        zenkiRefundId:
           description: Identificador único del reembolso generado por Zenkipay.
           type: string
           nullable: false
@@ -1661,7 +1662,7 @@ components:
           nullable: false
           maxLength: 100
           example: Ya no tenía en inventario.
-        fiat_original_payment:
+        fiatOriginalPayment:
           description: Detalle del pago original realizado por el comprador.
           type: object
           required:
@@ -1675,13 +1676,13 @@ components:
               format: double
               minimum: 0
               example: 10
-            currency_code_iso3:
+            currencyCodeIso3:
               description: 'Identificador único de la moneda del país, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html'
               type: string
               nullable: false
               maxLength: 5
               example: USD
-        crypto_payment:
+        cryptoPayment:
           $ref: '#/components/schemas/CryptoPayment'
         status:
           description: |-
@@ -1700,7 +1701,7 @@ components:
             - REFUNDED
             - FAILED
           example: PENDING
-        placed_at:
+        placedAt:
           description: |- 
             Fecha y hora cuando el comercio mando el reembolso a Zenkipay, en formato de milisegundos y UTC.
                   
@@ -1718,12 +1719,11 @@ components:
       description: Estructura base de la notificación que recibirá el comercio, esta notificación manejará diferentes tipos de eventos para su procesamiento. El contenido del mensaje estará en formato string para que se pueda interpretar de acuerdo al tipo de evento recibido por parte del comercio desde Zenkipay.
       type: object
       required:
-      - event_type
-      - flat_data
-      - timestamp
+      - eventTpe
+      - flatData
       nullable: false
       properties:
-        event_type:
+        eventType:
           description: |-
             Conjunto de eventos que puede recibir el comercio.
             
@@ -1734,7 +1734,7 @@ components:
           nullable: false
           maxLength: 128
           example: order.pay
-        flat_data:
+        flatData:
           description:  |-
             Datos del evento.
             
@@ -1743,7 +1743,7 @@ components:
             * Se va a recibir el objeto Refund cuando se notifique el evento order.refund
           type: string
           nullable: false
-          example: "{\"version\":\"v1.0.0\",\"zenki_order_id\":\"f325da2b8e3f476caa07e039406e72f0\",\"order_id\":\"f3359498592b\",\"cart_id\":\"96a17044f0e3\",\"type\":\"MIXED\",\"country_code_iso2\":\"MX\",\"status\":\"PENDING\",\"created_at\":1667353629,\"shopper\":{\"id\":\"f3359498592b\",\"name\":\"Juanito\",\"phone\":\"442536789\",\"email\":\"juanito@gmail.com\"},\"breakdown\":{\"currency_code_iso3\":\"USD\",\"total_items_amount\":200,\"shipment_amount\":50,\"subtotal_amount\":250,\"taxes_amount\":10,\"local_taxes_amount\":1.6,\"import_costs\":0,\"discount_amount\":0,\"additional_charges\":{\"donation\":1.1234},\"grand_total_amount\":262.7234},\"payment_info\":{\"exchange_rate\":{\"from\":\"MXN\",\"to\":\"USD\",\"value\":20,\"amount\":50,\"timestamp\":1667353629},\"crypto_love\":{\"discount_percentage\":1,\"discount_amount\":0.5,\"final_amount\":49.5,\"currency\":\"USD\"},\"crypto_payment\":{\"amount\":\"0.038282960887513325\",\"currency\":\"ETH\",\"blockchain\":\"BSC\",\"transaction_hash\":\"0xee8a3a5eb2a972785b7a56320682bbb843c29409c60dec2d25dbd3eaff91cf26\",\"network_scan_url\":\"https://etherscan.io/tx/0x3e86fd3c50dbf8e050124e28f33392ce4f4278a925d7c472b3e7ab12af0da115\"}},\"settlement_info\":{\"crypto_settlement\":{\"final_amount\":\"49.4\",\"currency\":\"USDC\"}},\"items\":[{\"external_id\":\"e40dbc7450f6\",\"quantity\":2,\"price\":10.33,\"name\":\"Libreta\",\"description\":\"Libretaderayas\",\"type\":\"WITH_CARRIER\",\"thumbnail_url\":\"https://cdn.tshirts.boutique/wp-content/uploads/2022/07/12213723/12100-105.jpg\",\"metadata\":{\"size\":\"L\",\"color\":\"red\"}}],\"metadata\":{\"tracking_id\":\"5514a95b0882\"},\"dispute\":{\"status\":\"OPEN\",\"created_at\":1667353629,\"resolution_request_type\":\"REQUEST_CONCILIATED\",\"resolution_request_at\":1667353629},\"claim\":{\"reason\":\"Seacaboelinventario\",\"status\":\"OPEN\",\"created_at\":1667353629},\"_links\":{\"refund\":{\"href\":\"https://api.zenki.fi/v1/pay/orders/f325da2b8e3f476caa07e039406e72f0/refunds/e40dbc7450f6\"}}}"
+          example: "{\"version\":\"v1.1.0\",\"zenkiOrderId\":\"f325da2b8e3f476caa07e039406e72f0\",\"orderId\":\"f3359498592b\",\"cartId\":\"96a17044f0e3\",\"type\":\"MIXED\",\"countryCodeIso2\":\"MX\",\"status\":\"PENDING\",\"createdAt\":1667353629,\"shopper\":{\"id\":\"f3359498592b\",\"name\":\"Juanito\",\"phone\":\"442536789\",\"email\":\"juanito@gmail.com\"},\"breakdown\":{\"currencyCodeIso3\":\"USD\",\"totalItemsAmount\":200,\"shipmentAmount\":50,\"subtotalAmount\":250,\"taxesAmount\":10,\"localTaxesAmount\":1.6,\"importCosts\":0,\"discountAmount\":0,\"additionalCharges\":{\"donation\":1.1234},\"grandTotalAmount\":262.7234},\"paymentInfo\":{\"exchangeRate\":{\"from\":\"MXN\",\"to\":\"USD\",\"value\":20,\"amount\":50,\"timestamp\":1667353629},\"cryptoLove\":{\"discountPercentage\":1,\"discountAmount\":0.5,\"finalAmount\":49.5,\"currency\":\"USD\"},\"cryptoPayment\":{\"amount\":\"0.038282960887513325\",\"currency\":\"ETH\",\"blockchain\":\"BSC\",\"transactionHash\":\"0xee8a3a5eb2a972785b7a56320682bbb843c29409c60dec2d25dbd3eaff91cf26\",\"networkScanUrl\":\"https://etherscan.io/tx/0x3e86fd3c50dbf8e050124e28f33392ce4f4278a925d7c472b3e7ab12af0da115\"}},\"settlementInfo\":{\"cryptoSettlement\":{\"finalAmount\":\"49.4\",\"currency\":\"USDC\"}},\"items\":[{\"externalId\":\"e40dbc7450f6\",\"quantity\":2,\"price\":10.33,\"name\":\"Libreta\",\"description\":\"Libretaderayas\",\"type\":\"WITH_CARRIER\",\"thumbnailUrl\":\"https://cdn.tshirts.boutique/wp-content/uploads/2022/07/12213723/12100-105.jpg\",\"metadata\":{\"size\":\"L\",\"color\":\"red\"}}],\"metadata\":{\"trackingId\":\"5514a95b0882\"},\"dispute\":{\"status\":\"OPEN\",\"createdAt\":1667353629,\"resolutionRequestType\":\"REQUEST_CONCILIATED\",\"resolutionRequestAt\":1667353629},\"claim\":{\"reason\":\"Se acabo el inventario\",\"status\":\"OPEN\",\"createdAt\":1667353629},\"_links\":{\"refund\":{\"href\":\"https://api.zenki.fi/v1/pay/orders/f325da2b8e3f476caa07e039406e72f0/refunds/e40dbc7450f6\"}}}"
 
 #---------------------------------------------
 #  Objeto: Shopper
@@ -1787,78 +1787,78 @@ components:
       description: Resumen de los montos del carrito de compra.
       type: object
       required:
-      - currency_code_iso3
-      - total_items_amount
-      - shipment_amount
-      - subtotal_amount
-      - taxes_amount
-      - grand_total_amount
+      - currencyCodeIso3
+      - totalItemsAmount
+      - shipmentAmount
+      - subtotalAmount
+      - taxesAmount
+      - grandTotalAmount
       nullable: false
       properties:
-        currency_code_iso3:
+        currencyCodeIso3:
           description: 'Código único de la moneda del país, se utiliza la definición del estándar ISO 4217 a 3 caracteres véase: https://es.wikipedia.org/wiki/ISO_4217 o https://www.iso.org/iso-4217-currency-codes.html.'
           type: string
           nullable: false
           maxLength: 5
           example: USD
-        total_items_amount:
+        totalItemsAmount:
           description: Suma del total del costo de los artículos.
           type: number
           nullable: false
           format: double
           minimum: 0
           example: 200
-        shipment_amount:
+        shipmentAmount:
           description: Costo de envío, en caso de no aplicar su valor debe ser 0.
           type: number
           nullable: false
           format: double
           minimum: 0
           example: 50
-        subtotal_amount:
-          description: Suma del total_items_amount más shipment_amount.
+        subtotalAmount:
+          description: Suma del totalItemsAmount más shipmentAmount.
           type: number
           nullable: false
           format: double
           minimum: 0
           example: 250
-        taxes_amount: 
+        taxesAmount: 
           description: Impuestos, en caso de no aplicar su valor debe ser 0.
           type: number
           nullable: false
           format: double
           minimum: 0
           example: 10
-        local_taxes_amount:
+        localTaxesAmount:
           description: Impuestos locales, en caso de no aplicar su valor debe ser 0.
           type: number
           nullable: true
           format: double
           minimum: 0
           example: 1.6
-        import_costs:
+        importCosts:
           description: Costos de importación, en caso de no aplicar su valor debe ser 0.
           type: number
           nullable: true
           format: double
           minimum: 0
           example: 0
-        discount_amount:
+        discountAmount:
           description: Descuento de tu comercio, en caso de no aplicar su valor debe ser 0.
           type: number
           nullable: true
           format: double
           minimum: 0
           example: 0
-        additional_charges:
+        additionalCharges:
           description: Cargos adicionales, se compone de un objeto llave/valor que comprende la descripción del cargo/el monto respectivamente.
           nullable: true
           additionalProperties:
             type: string
           example:
             donation: 1.1234
-        grand_total_amount:
-          description: Suma de subtotal_amount, taxes_amount, local_taxes_amount, import_costs y cada valor de additional_charges menos discoun_amount.
+        grandTotalAmount:
+          description: Suma de subtotalAmount, taxesAmount, localTaxesAmount, importCosts y cada valor dde additionalCharges menos discountAmount.
           type: number
           nullable: false
           format: double
@@ -1876,7 +1876,7 @@ components:
       - price
       - name
       properties:
-        external_id:
+        externalId:
           description: Identificador único del producto o servicio asignado por el comercio.
           type: string
           nullable: false
@@ -1889,13 +1889,20 @@ components:
           format: int64
           minimum: 0
           example: 2
-        price:
-          description: Precio total de productos o servicios del pedido del mismo tipo.
+        unitPricePerItem:
+          description: Precio unitario del producto o servicio.
           type: number
           nullable: false
           format: double
           minimum: 0
-          example: 10.33
+          example: 5.10
+        totalPrice:
+          description: Precio total de productos o servicios del pedido del mismo tipo (quantity * unitPricePerItem).
+          type: number
+          nullable: false
+          format: double
+          minimum: 0
+          example: 10.20
         name:
           description: Nombre corto del producto o servicio.
           type: string
@@ -1921,7 +1928,7 @@ components:
             - WITH_CARRIER
             - WITHOUT_CARRIER
           example: WITH_CARRIER
-        thumbnail_url:
+        thumbnailUrl:
           description: URL de la imagen del producto (miniatura).
           type: string
           nullable: true
@@ -1994,13 +2001,13 @@ components:
           nullable: false
           maxLength: 30
           example: BSC
-        transaction_hash:
+        transactionHash:
           description: Identificador único de la transacción, proprocionado por la blockchain.
           type: string
           nullable: true
           maxLength: 300
           example: '0xee8a3a5eb2a972785b7a56320682bbb843c29409c60dec2d25dbd3eaff91cf26'
-        network_scan_url:
+        networkScanUrl:
           description: URL para consultar el estado de la transacción directamente en la blockchain.
           type: string
           nullable: true
@@ -2014,36 +2021,36 @@ components:
       description: Información de comercio.
       type: object
       required:
-      - merchant_info
-      - integration_config
-      - crypto_love_percentage
-      - crypto_currencies
-      - escrow_config
+      - merchantInfo
+      - integrationConfig
+      - cryptoLovePercentage
+      - cryptoCurrencies
+      - escrowConfig
       nullable: false
       properties:
-        merchant_info:
+        merchantInfo:
           description: Información general del comercio.
           type: object
           required:
-          - commercial_name
-          - account_type
-          - kyc_status
-          - integration_status
+          - commercialName
+          - accountType
+          - kycStatus
+          - integrationStatus
           nullable: false
           properties:
-            commercial_name:
+            commercialName:
               description: Nombre comercial del comercio que registro cuando se creo su cuenta en Zenki.
               type: string
               nullable: false
               maxLength: 300
               example: Zapaterías Juanito
-            legal_name:
+            legalName:
               description: Nombre legal del comercio que registro durante el proceso de activación de cuenta en Zenki.
               type: string
               nullable: false
               maxLength: 300
               example: Grupo Juanito y Asociados S.A. de C.V.
-            account_type:
+            accountType:
               description: |-
                 Tipo de cuenta del comercio.
                 
@@ -2054,7 +2061,7 @@ components:
               nullable: false
               maxLength: 30
               example: Business
-            kyc_status:
+            kycStatus:
               description: |-
                 Estado del proceso documental en el que se encuentra el comercio.
                 
@@ -2067,7 +2074,7 @@ components:
                 - PENDING
                 - APPROVED
               example: APPROVED
-            integration_status:
+            integrationStatus:
               description: |-
                 Estado del proceso de integración en el que se encuentra el comercio.
                 
@@ -2080,7 +2087,7 @@ components:
                 - PENDING
                 - COMPLETED
               example: COMPLETED
-        integration_config:
+        integrationConfig:
           description: Configuraciones de las integraciones del comercio.
           type: object
           required:
@@ -2096,7 +2103,7 @@ components:
                 type: object
                 required:
                 - name
-                - client_id
+                - clientId
                 nullable: false
                 properties:
                   name:
@@ -2105,13 +2112,13 @@ components:
                     nullable: false
                     maxLength: 64
                     example: api
-                  client_id:
+                  clientId:
                     description: Key del plugin activo.
                     type: string
                     nullable: false
                     maxLength: 128
                     example: b6026f861fd41a94c3389d54293de9d04bde6f7c
-        crypto_love_percentage:
+        cryptoLovePercentage:
           description: Descuento en porcentaje otorgado por el comercio al comprador en su compra por activar crypto love.
           type: number
           nullable: false
@@ -2119,7 +2126,7 @@ components:
           minimum: 0
           maximum: 100
           example: 1
-        crypto_assets:
+        cryptoAssets:
           description: Listado de cripto monedas soportadas
           type: array
           nullable: false
@@ -2142,7 +2149,7 @@ components:
                 type: boolean
                 nullable: false
                 example: true
-        escrow_config:
+        escrowConfig:
           description: Resumen del monto pagado en crypto moenda por el comprador.
           type: object
           required:
@@ -2151,7 +2158,7 @@ components:
           - blockchain
           nullable: false
           properties:
-            order_type:
+            orderType:
               description: |-
                 Indica el modelo para la entrega del producto o servicio.
                 
@@ -2166,14 +2173,14 @@ components:
                 - WITHOUT_CARRIER
                 - MIXED
               example: MIXED
-            shopper_notification:
+            shopperNotification:
               description: Cantidad de horas que se va a esperar para que el shopper notifique a Zenki de que recibió correctamente los servicios. El tiempo está expresado en horas.
               type: integer
               nullable: false
               format: int64
               minimum: 0
               example: 6
-            time_wait_to_approval:
+            timeWaitToApproval:
               description: Cantidad de horas que se va a esperar Zenki para tener confirmación por parte del comprador antes de aprovar el pago y liberar los fondos al comercio. El tiempo está expresado en horas.
               type: integer
               nullable: false
@@ -2187,33 +2194,82 @@ components:
     ErrorResponse:
       type: object
       required:
-        - request_id
+        - requestId
         - title
-        - error_code
-        - human_message
+        - errorCode
+        - category
+        - humanMessage
         - timestamp
       properties:
-        request_id:
+        requestId:
           description: Identificador único del error generado por Zenkipay por cada petición enviada al API.
           type: string
           nullable: false
           maxLength: 128
-          example: 352b648e2cd7
+          example: af20360eccddd8d8
         title:
           description: Descripción corta del error.
           type: string
           nullable: false
-          maxLength: 100
-          example: invalid_request
-        error_code:
+          maxLength: 255
+          example: Lo sentimos, pero su solicitud no puede ser procesada, verifique los datos de su campo.
+        errorCode:
           description: 'Código de error que ayuda a identificar el motivo del problema al momento de procesar la petición, este código estará basado en los códigos HTTP actualmente soportados por la especificación: https://www.rfc-editor.org/rfc/rfc9110#section-15'  
           type: integer
           nullable: false
           format: int64
           minimum: 0
           maximum: 999
-          example: 401
-        human_message:
+          example: 400
+        category:
+          description: |-
+            Categoría del error ocurrido.
+             
+            Posibles valores:
+            * FATAL  - Cualquier error que fuerce el cierre del servicio o la aplicación para evitar la pérdida de datos (o una mayor pérdida de datos). Se reserva solo para los errores y situaciones más atroces en los que se garantiza que ha habido corrupción o pérdida de datos.
+            * SEVERE - Cualquier error que sea fatal para el servicio, pero no para la aplicación completa (El servicio dejo de responder o no se puede ejecutar una operación). Estos errores forzarán la intervención del usuario (administrador o usuario directo).
+            * ERROR  - Cualquier error que sea fatal para la operación, pero no para el servicio o la aplicación (no se puede abrir un archivo requerido, faltan datos, etc.). Estos errores forzarán la intervención del usuario (administrador o usuario directo).
+            * WARN   - Cualquier cosa que potencialmente pueda causar rarezas en la aplicación, pero para lo cual me estoy recuperando automáticamente. (Como cambiar de un servidor primario a uno de respaldo, volver a intentar una operación, perder datos secundarios, etc.)
+            * INFO   - Designa mensajes informativos que resaltan el progreso de la aplicación y posiblemnte hubo algún error menor que afecta  muy poco a la experiencia.
+          type: string
+          nullable: false
+          enum:
+            - FATAL
+            - SEVERE
+            - ERROR
+            - WARN
+            - INFO
+          example: WARN
+        validationErrors:
+          description: Conjunto de validaciones que no pasaron al evaluar la información de la petición.
+          type: array
+          nullable: true
+          items:
+            type: object
+            required:
+              - objectName
+              - field
+              - message
+            properties:
+              objectName:
+                description: Nombre del objeto en la estructura de datos donde se origina el error.
+                type: string
+                nullable: false
+                maxLength: 255
+                example: createOrderTracking
+              field:
+                description: Campo del objeto donde presenta errores de validación.
+                type: string
+                nullable: false
+                maxLength: 255
+                example: trackingId
+              message:
+                description: Descripción del error ocasionado al no pasar alguna validación de la información.
+                type: string
+                nullable: false
+                maxLength: 255
+                example: Se requiere número de seguimiento.
+        humanMessage:
           description: Mensaje de error recomendado para mostrar a los compradores, este mensaje está soportado para los lenguajes de ingles y español.
           type: string
           nullable: false
@@ -2236,23 +2292,23 @@ components:
     RequestTokenOAuth2:
       type: object
       required:
-        -  client_id
-        -  client_secret
-        -  grant_type
+        -  clientId
+        -  clientSecret
+        -  grantType
       properties:
-        client_id:
+        clientId:
           description: Client ID Key de Zenkipay debe obtenerse desde el portal de Zenkipay en la sección de seguridad.
           type: string
           nullable: false
           maxLength: 128
           example: 4188918f7da1547d13e3
-        client_secret: 
+        clientSecret: 
           description: Client Secret Key en Zenkipay debe obtenerse desde el portal de Zenkipay en la sección de seguridad.
           type: string
           nullable: false
           maxLength: 128
           example: 4ed3872fccacc77ce842
-        grant_type: 
+        grantType: 
           description: Tipo de permiso, para todas las operaciones realizadas en el API de Zenkipay desde el servidor del comercio se requiere enviar como grant type el valor 'client_credentials'.
           type: string
           nullable: false
@@ -2265,25 +2321,25 @@ components:
     TokenOAuth2:
       type: object
       required:
-        -  access_token   
-        -  token_type
-        -  expires_in
-        -  refresh_token   
-        -  refresh_expires_in
+        -  accessToken   
+        -  tokenType
+        -  expiresIn
+        -  refreshToken   
+        -  refreshExpiresIn
         -  scope
       properties:
-        access_token:  
+        accessToken:  
           description: El access token que será requerido para enviar en todas las peticiones al API de Zenki.
           type: string
           nullable: false
           maxLength: 1024
           example: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICItNUlsX2I0cUktdWFvaEI3d244UHY3WEM2UEktU3BNbmZCRnlJZUx6QTJNIn0.eyJleHAiOjE1OTQyMTY0OTQsImlhdCI6MTU5NDIxNjE5NCwianRpIjoiZjVmNTBjMzEtNWIwNC00OWQ2LTljYmMtM2YwMWU5OTg5ZWQxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2F1dGgvcmVhbG1zL2FwcHNkZXZlbG9wZXJibG9nIiwic3ViIjoiNTlmODFhMzYtYTIyMC00ZmE4LTlhZWEtMzRlN2JhNjY4OTAxIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoicGhvdG8tYXBwLWNsaWVudC1jcmVkZW50aWFscyIsInNlc3Npb25fc3RhdGUiOiI3NTAyY2YzMS1iMjEwLTQ3NTQtYjkxOS0wN2UxZDg0OTNmYTMiLCJhY3IiOiIxIiwic2NvcGUiOiJlbWFpbCIsImNsaWVudElkIjoicGhvdG8tYXBwLWNsaWVudC1jcmVkZW50aWFscyIsImNsaWVudEhvc3QiOiIxMjcuMC4wLjEiLCJjbGllbnRBZGRyZXNzIjoiMTI3LjAuMC4xIn0.fQVsLpQJchcofA18FOSr0gtjeo01s9bMFF1ewsI-trrzzNL28QABmm_rsb4-p0iw5fGG3-bEInFe-Owxm9sZbQ_O7je_BVMDrlJEs-bAY5cLIQWVqy3P5xCsyFt-F6y89LAOCUCGI127W18zoUagLAoi5bGCIgxKled-MYRK8MQ-PcZzYCp5FkPFMv6Wd8I5m6TZJ6xK0eG79LVDPqj-s9YGfjY_n64uiT9VneYHG261SisgZ978ZMF-gkjit9CsSTQEW2cBlyeriy133s0E0ycvybLwnHYsGzRs5k8xhgqa3ZYovtZeK2SWARoNSXWQjUCBcndT9teWcZSgQxPIzw'
-        token_type: 
+        tokenType: 
           description: El access token que sera requerido para enviar como cabecera en todas las peticiones al API de Zenki.
           type: string
           nullable: false
           example: Bearer
-        expires_in: 
+        expiresIn: 
           description: Tiempo en segundo de expiración del access token.
           type: integer
           nullable: false
@@ -2296,7 +2352,7 @@ components:
       type: object
       required:
         - error
-        - error_description
+        - errorDescription
       properties:
         error:
           description: Nombre del error ocurrido.
@@ -2304,7 +2360,7 @@ components:
           nullable: false
           maxLength: 30
           example: unauthorized_client
-        error_description:
+        errorDescription:
           description: Descripción del error ocurrido.
           type: string
           nullable: false
@@ -2320,3 +2376,10 @@ components:
       description: Esquema de seguridad utilizado para llamar a los servicios del API Zenkipay.
       scheme: bearer
       bearerFormat: ACCESS_TOKEN
+    oAuth2ClientCredentials:
+      type: oauth2
+      description: Esquema de seguridad para generar un token de acceso que permita llamar posteriormente a los servicios del API Zenkipay.
+      flows:
+        clientCredentials:
+          tokenUrl: /v1/oauth/tokens
+          scopes: {}
