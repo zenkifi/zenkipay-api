@@ -62,7 +62,7 @@ paths:
       requestBody:
         description: Parameters for OAuth 2 token creation.
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               $ref: '#/components/schemas/RequestTokenOAuth2'
       responses:
