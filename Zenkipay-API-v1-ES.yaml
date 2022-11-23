@@ -1895,7 +1895,7 @@ components:
           nullable: false
           format: double
           minimum: 0
-          example: 5.10
+          example: 100
         name:
           description: Nombre corto del producto o servicio.
           type: string
