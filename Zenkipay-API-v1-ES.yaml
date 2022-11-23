@@ -2006,6 +2006,29 @@ components:
           nullable: true
           maxLength: 300
           example: 'https://etherscan.io/tx/0x3e86fd3c50dbf8e050124e28f33392ce4f4278a925d7c472b3e7ab12af0da115'
+        transactionStatus:
+          description: |-
+            Estado de la transacción de pago en la red de blockchain.
+            
+            Posibles valores:
+            * CONFIRMING                        - Pendiente de confirmación en la cadena de bloques (blockchain)
+            * PARTIALLY_COMPLETED               - Uno o más de los registros de transacciones se completaron con éxito (Solo para transacciones agregadas).
+            * COMPLETED                         - Completado con éxito
+            * CANCELLED                         - La transacción fue cancelada por el staff de Zenkipay o por el servicio de terceros.
+            * REJECTED                          - La transacción fue rechazada por el servicio de terceros.
+            * BLOCKED                           - La transacción fue bloqueada debido a una regla de política de autorización de transacciones.
+            * FAILED                            - La transacción ha fallado.
+          type: string
+          nullable: false
+          enum:
+            - CONFIRMING
+            - PARTIALLY_COMPLETED
+            - COMPLETED
+            - CANCELLED
+            - REJECTED
+            - BLOCKED
+            - FAILED
+          example: COMPLETED
 
 #---------------------------------------------
 #  Objeto: Merchant
