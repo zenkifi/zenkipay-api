@@ -57,8 +57,6 @@ paths:
       parameters: []
       tags:
         - Autenticación y autorización
-      security:
-        - oAuth2ClientCredentials: []
       requestBody:
         description: Parámetros para creación de token OAuth 2
         content:
@@ -2392,10 +2390,3 @@ components:
       description: Esquema de seguridad utilizado para llamar a los servicios del API Zenkipay.
       scheme: bearer
       bearerFormat: ACCESS_TOKEN
-    oAuth2ClientCredentials:
-      type: oauth2
-      description: Esquema de seguridad para generar un token de acceso que permita llamar posteriormente a los servicios del API Zenkipay.
-      flows:
-        clientCredentials:
-          tokenUrl: /v1/oauth/tokens
-          scopes: {}
