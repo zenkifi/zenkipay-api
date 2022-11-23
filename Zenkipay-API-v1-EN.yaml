@@ -1874,7 +1874,7 @@ components:
       type: object
       required:
       - quantity
-      - price
+      - unitPrice
       - name
       properties:
         externalId:
