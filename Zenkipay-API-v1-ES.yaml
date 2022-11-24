@@ -37,6 +37,7 @@ tags:
   - name: Autenticación y autorización
   - name: Comercios
   - name: Ordenes
+  - name: Escrow
   - name: Rastreos
   - name: Reembolsos
   - name: Webhooks
@@ -398,6 +399,112 @@ paths:
       security:
         - JWTAuth: []
 #---------------------------------------------
+#  Endpoint: Actualización de Escrow.
+#---------------------------------------------
+  '/v1/pay/escrow/{zenkiOrderId}/fulfillments':
+    patch:
+      summary: Actualización de Escrow.
+      description: Servicio encargado de actualizar el Escrow para pedidos sin número de rastreo.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Si desea conocer más información sobre los servicios, consulta la
+          documentación oficial de Zenkipay.
+      parameters:
+        - in: path
+          name: zenkiOrderId
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la orden generado por Zenkipay.
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+#        - in: header
+#          name: X-ZENKI-PLUGIN-VERSION
+#          required: false
+#          schema:
+#            type: string
+#          description: |- 
+#            Versión del plugin utilizado para integrar a Zenkipay.
+#          example: 1.0.0
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+      operationId: updateEscrow
+      responses:
+        '201':
+          description: Escrow actualizado.
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Parámetro de orden esperado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Escrow
+      security:
+        - JWTAuth: []
+#---------------------------------------------
 #  Endpoint: Registro de guías para rastreo
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}/tracking':
@@ -458,43 +565,43 @@ paths:
       operationId: registerTrackingOrders
       responses:
         '201':
-          description: Rastreo registrado
+          description: Rastreo registrado.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Traking'
+                $ref: '#/components/schemas/Tracking'
         '400':
-          description: Parámetro de rastreo esperado
+          description: Parámetro de rastreo esperado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Acceso denegado
+          description: Acceso denegado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Recurso no encontrado
+          description: Recurso no encontrado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '406':
-          description: Encabezados no aceptados
+          description: Encabezados no aceptados.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '428':
-          description: El nombre del parámetro no puede encontrarse
+          description: El nombre del parámetro no puede encontrarse.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: Error interno del servidor
+          description: Error interno del servidor.
           content:
             application/json:
               schema:
@@ -508,7 +615,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddTraking'
+              $ref: '#/components/schemas/AddTracking'
         description: >-
           Se podrá solicitar el registro de un número de rastreo asociado a un envío para que Zenkipay realice el seguimiento del proceso de entrega, según lo vaya informando la mensajería.
 #---------------------------------------------
@@ -582,7 +689,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrakingEvents'
+                $ref: '#/components/schemas/TrackingEvents'
         '400':
           description: Parámetro de rastreo esperado
           content:
@@ -626,7 +733,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddTrakingEvent'
+              $ref: '#/components/schemas/AddTrackingEvent'
         description: >-
           Se mandará una estructura JSON que tendrá la información requerida
           para actualizar el estado del envío.
@@ -1002,9 +1109,9 @@ components:
             trackingId: 5514a95b0882
             
 #---------------------------------------------
-#  Object: AddTraking
+#  Object: AddTracking
 #---------------------------------------------
-    AddTraking:
+    AddTracking:
       type: object
       required:
         - courierType
@@ -1036,9 +1143,9 @@ components:
           example: Mensajeria interna - Zapatería Hermanos
             
 #---------------------------------------------
-#  Object: AddTrakingEvent
+#  Object: AddTrackingEvent
 #---------------------------------------------
-    AddTrakingEvent:
+    AddTrackingEvent:
       type: object
       required:
         - status
@@ -1473,9 +1580,9 @@ components:
           example: 'PsFEJpunOmvPmOiRyfyBWnrKpsZ4FNSSTp1s6rCIvV6YIe+tJC7RxwgXgaVVMJHikyMjJXuZIiIB0lSs0nPe0ln50hDAk+IFz6j06wEbj7rzG4ZLQMOYaHFnNLjO/KQlxm6IUhhkZ5LtbaKChOw7+VOTM0fJBlvtWlVxl0TYS3qc2JOvY2f5/3892hKus+Qj3sSX56Y6xaHv0hHvV7MZlP9Mnvlg/AYlh03MukpvhRiIPfdOQeknWYwNuU6OZjNeO782bEbi7c8wKB3m3Ckjh+WkJ+l2nJyU6tHFBg3Lyg28xy6wWf+UfoyHBx2kHTVzrP5i0ybQPNEl0Gb95ORTb61UoZCnXDrVD4SRxHFd//V0qN1eT233hgof65eAAHu0k+t0OVJWuVrfk2olHlFBDo1DTyhiwAmX74o57a+8YxdrmMbxRmuVTb8iXrtcihxcsLINC1FhT3QfQdXDhpS+WYILcgpQ0SRFHKCAHP6HjFG6T2hO4NnG6rNut6DsjWCIZI8MJdZSMYDQ+n7wJ63jzKGc1NW83U5cUWtZhhBwUo221U9/3XXMBb3bnY8Ej5gHreRodXCyOowjutP+XICwevvuJa4BAEYJ6DJmqxWBL1pBcNKoLTtGqYzXJg1HFZ2qPzdR9jZSsk15q+Wg/BlRXaeIe0WA495w1FwPS+SRjU0='
 
 #---------------------------------------------
-#  Objeto: Traking
+#  Objeto: Tracking
 #---------------------------------------------
-    Traking:
+    Tracking:
       type: object
       required:
         - zenkiTrackingId
@@ -1578,9 +1685,9 @@ components:
               maxLength: 50
               example: Fedex
 #---------------------------------------------
-#  Objeto: TrakingEvents
+#  Objeto: TrackingEvents
 #---------------------------------------------
-    TrakingEvents:
+    TrackingEvents:
       description: Lista de eventos registrados del proceso de entrega del paquete al comprador.
       type: array
       nullable: false
