@@ -2128,7 +2128,7 @@ components:
                 properties:
                   name:
                     description: |-
-                       Nombre del plugin activo.
+                      Nombre del plugin activo.
                       
                       Posibles valores:
                       * SCRIPT      - Integración mediante API de Zenkipay.
