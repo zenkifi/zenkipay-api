@@ -2070,24 +2070,30 @@ components:
                 Merchant account type.
                 
                 Possible values:
-                * Personal - Natural person with commercial activity.
-                * Business - Company with commercial activity
+                * PERSONAL - Natural person with commercial activity.
+                * ENTITY - Company with commercial activity
               type: string
               nullable: false
-              maxLength: 30
-              example: Business
+              enum:
+                - PERSONAL
+                - ENTITY
+              example: ENTITY
             kycStatus:
               description: |-
                 State of the documentary process in which the merchant is located.
                 
                 Possible values:
-                * PENDING  - Indicates that you still need to send information or documents to complete your KYC process.
-                * APPROVED - The documentary registration process has been completed and the Zenki staff has authorized the business to operate.
+                * PENDING      - Indicates that you still need to send information or documents to complete your KYC process.
+                * APPROVED     - The documentary registration process has been completed and the Zenki staff has authorized the business to operate.
+                * REQUEST_INFO - Zenki Staff requested more information or change in trade documents.
+                * REJECTED     - Zenki Staff definitively rejected the merchant request.
               type: string
               nullable: false
               enum:
                 - PENDING
                 - APPROVED
+                - REQUEST_INFO
+                - REJECTED
               example: APPROVED
             integrationStatus:
               description: |-
@@ -2122,11 +2128,36 @@ components:
                 nullable: false
                 properties:
                   name:
-                    description: Name of the active plugin.
+                    description: |-
+                       Active plugin name.
+                      
+                      Posibles valores:
+                      * SCRIPT      - Integration through Zenkipay API.
+                      * WOOCOMMERCE - Integration through the WooCommerce plugin.
+                      * BIGCOMMERCE - Integration through the BigCommerce plugin.
+                      * MAGENTO     - Integration through the Magento plugin.
+                      * ECWID       - Integration through the ECWID plugin.
+                      * SHOPIFY     - Integration through the Shopify plugin.
+                      * VTEX        - Integration through the VTEX plugin.
+                      * ANGULAR     - Integration through the Angular Front-End library.
+                      * REACT       - Integration through the React Front-End library.
+                      * VUEJS       - Integration through the VUE JS Front-End library.
+                      * PRESTASHOP  - Integration through the Prestashop plugin.
                     type: string
                     nullable: false
-                    maxLength: 64
-                    example: api
+                    enum:
+                     - SCRIPT
+                     - WOOCOMMERCE
+                     - BIGCOMMERCE
+                     - MAGENTO
+                     - ECWID
+                     - SHOPIFY
+                     - VTEX
+                     - ANGULAR
+                     - REACT
+                     - VUEJS
+                     - PRESTASHOP
+                    example: SCRIPT
                   clientId:
                     description: Active plugin key.
                     type: string
@@ -2189,7 +2220,7 @@ components:
                 - MIXED
               example: MIXED
             shopperNotification:
-              description: Number of hours to wait for the shopper to notify Zenki that they have successfully received the services. Time is expressed in hours.
+              description: Number of hours to wait for the merchant to notify Zenki that they have delivered the services to the shopper. Time is expressed in hours.
               type: integer
               nullable: false
               format: int64

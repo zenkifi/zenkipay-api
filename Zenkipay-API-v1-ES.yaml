@@ -2069,24 +2069,30 @@ components:
                 Tipo de cuenta del comercio.
                 
                 Posibles valroes:
-                * Personal - Persona natural física con actividad comercial.
-                * Business - Empresa con actividad comercial.
+                * PERSONAL - Persona natural física con actividad comercial.
+                * ENTITY - Empresa con actividad comercial.
               type: string
               nullable: false
-              maxLength: 30
-              example: Business
+              enum:
+                - PERSONAL
+                - ENTITY
+              example: ENTITY
             kycStatus:
               description: |-
                 Estado del proceso documental en el que se encuentra el comercio.
                 
                 Posibles valores:
-                * PENDING  - Indica que aún falta por enviar información o documentos para concluir su proceso de KYC.
-                * APPROVED - Se ha finalizado el proceso de registro documental y el staff de Zenki ha autorizado al comercio para operar.
+                * PENDING      - Indica que aún falta por enviar información o documentos para concluir su proceso de KYC.
+                * APPROVED     - Se ha finalizado el proceso de registro documental y el staff de Zenki ha autorizado al comercio para operar.
+                * REQUEST_INFO - El Staff de Zenki solicitó más información o cambio en documentos del comercio.
+                * REJECTED     - El Staff de Zenki rechazó definitivamente la solicitud del comercio.
               type: string
               nullable: false
               enum:
                 - PENDING
                 - APPROVED
+                - REQUEST_INFO
+                - REJECTED
               example: APPROVED
             integrationStatus:
               description: |-
@@ -2121,11 +2127,36 @@ components:
                 nullable: false
                 properties:
                   name:
-                    description: Nombre del plugin activo.
+                    description: |-
+                       Nombre del plugin activo.
+                      
+                      Posibles valores:
+                      * SCRIPT      - Integración mediante API de Zenkipay.
+                      * WOOCOMMERCE - Integración mediante el plugin de WooCommerce.
+                      * BIGCOMMERCE - Integración mediante el plugin de BigCommerce.
+                      * MAGENTO     - Integración mediante el plugin de Magento.
+                      * ECWID       - Integración mediante el plugin de ECWID.
+                      * SHOPIFY     - Integración mediante el plugin de Shopify.
+                      * VTEX        - Integración mediante el plugin de VTEX.
+                      * ANGULAR     - Integración mediante de la librería Front-End de Angular.
+                      * REACT       - Integración mediante de la librería Front-End de React.
+                      * VUEJS       - Integración mediante de la librería Front-End de VUE JS.
+                      * PRESTASHOP  - Integración mediante el plugin de Prestashop.
                     type: string
                     nullable: false
-                    maxLength: 64
-                    example: api
+                    enum:
+                     - SCRIPT
+                     - WOOCOMMERCE
+                     - BIGCOMMERCE
+                     - MAGENTO
+                     - ECWID
+                     - SHOPIFY
+                     - VTEX
+                     - ANGULAR
+                     - REACT
+                     - VUEJS
+                     - PRESTASHOP
+                    example: SCRIPT
                   clientId:
                     description: Key del plugin activo.
                     type: string
@@ -2188,7 +2219,7 @@ components:
                 - MIXED
               example: MIXED
             shopperNotification:
-              description: Cantidad de horas que se va a esperar para que el shopper notifique a Zenki de que recibió correctamente los servicios. El tiempo está expresado en horas.
+              description: Número de horas de espera para que el comercio notifique a Zenki que ha entregado los servicios al comprador. El tiempo está expresado en horas.
               type: integer
               nullable: false
               format: int64
