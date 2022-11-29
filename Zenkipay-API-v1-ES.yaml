@@ -311,6 +311,7 @@ paths:
           schema:
             type: string
           description: Identificador único de la orden generado por Zenkipay.
+          example: 3a89e750101049108eb884e3d2e1d7ba
         - in: header
           name: X-ZENKI-PLUGIN-ID
           required: false
@@ -410,7 +411,6 @@ paths:
 #---------------------------------------------
 #  Endpoint: Consulta de orden de pago
 #---------------------------------------------
-  '/v1/pay/orders/{zenkiOrderId}':
     get:
       summary: Información de la orden
       description: Se obtiene la información de la orden basado en el id de la orden de Zenkipay.
