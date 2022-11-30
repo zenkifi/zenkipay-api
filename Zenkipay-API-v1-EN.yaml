@@ -55,7 +55,21 @@ paths:
         description: >-
           For more details on the services, you can consult the documentation
           Zenkipay official.
-      parameters: []
+      parameters:
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
       tags:
         - Authentication and authorization
       requestBody:
