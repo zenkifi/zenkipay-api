@@ -11,6 +11,7 @@ files[] = {"id":"24996507-81051d0b-7c5c-4ac9-af81-a7399a41e494","path":"Zenkipay
 
 [relations.apiDefinition]
 rootDirectory = postman/schemas
+files[] = {"path":"Zenkipay-API-v1-EN.yaml","metaData":{}}
 
 [relations.apiDefinition.metaData]
 type = openapi:3
