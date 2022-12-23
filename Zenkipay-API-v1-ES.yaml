@@ -102,7 +102,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/me':
     get:
-      summary: Información del comercio.
+      summary: Información del comercio
       description: Se obtiene la configuración actual del comercio.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -532,7 +532,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/escrow/{zenkiOrderId}/fulfillments':
     patch:
-      summary: Actualización de Escrow.
+      summary: Actualización de Escrow
       description: Servicio encargado de actualizar el Escrow para pedidos sin número de rastreo.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -987,7 +987,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}/refunds/{zenkiRefundId}':
     get:
-      summary: Consulta de reembolsos para una orden.
+      summary: Consulta de reembolsos para una orden
       description: Se consulta el reembolso por el número de orden.
       externalDocs:
         url: 'http://developer.zenki.fi/'
@@ -1099,7 +1099,7 @@ paths:
 #---------------------------------------------
   '/URL_MERCHANT':
     post:
-      summary: Notificaciones de eventos para el comercio.
+      summary: Notificaciones de eventos para el comercio
       description: Servicio que permite enviar diferentes eventos al comercio.
       externalDocs:
         url: 'https://developer.zenki.fi/'

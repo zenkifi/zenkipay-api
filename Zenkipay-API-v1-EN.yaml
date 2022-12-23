@@ -48,7 +48,7 @@ paths:
   '/v1/oauth/tokens':
     post:
       operationId: createToken
-      summary: Create an authentication token in Zenki.
+      summary: Create an authentication token in Zenki
       description: This request must be sent each time it is required to generate a token to consume Zenki services.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -102,7 +102,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/me':
     get:
-      summary: Merchant information.
+      summary: Merchant information
       description: The current configuration of the merchnat is obtained.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -202,7 +202,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/orders':
     post:
-      summary: Payment order registration.
+      summary: Payment order registration
       description: Service that allows registering a payment order and associating it with a merchant.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -426,7 +426,7 @@ paths:
 #  Endpoint: Query payment order
 #---------------------------------------------
     get:
-      summary: Order information.
+      summary: Order information
       description: Order information is obtained based on the Zenkipay order id.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -532,7 +532,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/escrow/{zenkiOrderId}/fulfillments':
     patch:
-      summary: Escrow update.
+      summary: Escrow update
       description: Service in charge of updating the escrow for orders without tracking.
       externalDocs:
         url: 'https://developer.zenki.fi/'
@@ -752,7 +752,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}/tracking/{zenkiTrackId}':
     patch:
-      summary: Shipping Status Update.
+      summary: Shipping Status Update
       description: Based on the order id and the tracking id the delivery status is updated.
       externalDocs:
         url: 'http://developer.zenki.fi/'
@@ -873,7 +873,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}/refunds':
     post:
-      summary: Register of refunds for an order.
+      summary: Register of refunds for an order
       description: One or more refunds are recorded by the order number.
       externalDocs:
         url: 'http://developer.zenki.fi/'
@@ -987,7 +987,7 @@ paths:
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}/refunds/{zenkiRefundId}':
     get:
-      summary: Request refunds for an order.
+      summary: Request refunds for an order
       description: The refund is consulted by the order number.
       externalDocs:
         url: 'http://developer.zenki.fi/'
@@ -1099,7 +1099,7 @@ paths:
 #---------------------------------------------
   '/URL_MERCHANT':
     post:
-      summary: Event notifications for merchant.
+      summary: Event notifications for merchant
       description: Service that allows different events to be sent to the merchant.
       externalDocs:
         url: 'https://developer.zenki.fi/'
