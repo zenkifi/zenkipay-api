@@ -1106,6 +1106,8 @@ paths:
         description: >-
           For more details on the services, consult the documentation
           Zenkipay official.
+
+          NOTE: You must change the entire URL displayed at the top of the service to the final URL where you will receive the webhooks that Zenkipay sends you.
       parameters:
         - in: header
           name: Svix-Id
