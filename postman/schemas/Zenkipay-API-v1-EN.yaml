@@ -2382,7 +2382,7 @@ components:
                 - COMPLETED
               example: COMPLETED
         integrationConfig:
-          description: Merchant integrations settings
+          description: Merchant integrations settings.
           type: object
           required:
           - plugins

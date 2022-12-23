@@ -2445,7 +2445,7 @@ components:
           maximum: 100
           example: 1
         cryptoAssets:
-          description: Listado de cripto monedas soportadas
+          description: Listado de cripto monedas soportadas.
           type: array
           nullable: false
           items:
