@@ -48,7 +48,7 @@ paths:
   '/v1/oauth/tokens':
     post:
       operationId: createToken
-      summary: Create an authentication token in Zenki.
+      summary: Create an authentication token in Zenki
       description: This request must be sent each time it is required to generate a token to consume Zenki services.
       externalDocs:
         url: 'https://developer.zenki.fi/'
