@@ -2136,7 +2136,7 @@ components:
           nullable: false
           format: double
           minimum: 0
-          example: 262.7234
+          example: 261.6
 
 #---------------------------------------------
 #  Objeto: Item
