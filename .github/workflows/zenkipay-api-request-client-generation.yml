@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: zenkifi/zenkipay-api-clients-sdk
-          path: ../zenkipay-api-clients-sdk
+          path: zenkipay-api-clients-sdk
 
       - name: Moviendo para ver el repositorio orquestador de clientes
         run: |
@@ -42,16 +42,18 @@ jobs:
 
       - name: Generando archivo de versionado
         run: |
+          cd zenkipay-api-clients-sdk
           echo "Version pasada"
           cat ZenkipayApiLastVersion.txt
           echo "Version nueva"
           rm ZenkipayApiLastVersion.txt
-          cat ../zenkipay-api/README.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
+          cat ../README.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
           cat ZenkipayApiLastVersion.txt
           ls -la
 
       - name: Subiendo versionado para iniciar construcción de librerías de SDKs
         run: |
+          cd zenkipay-api-clients-sdk
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add ZenkipayApiLastVersion.txt
