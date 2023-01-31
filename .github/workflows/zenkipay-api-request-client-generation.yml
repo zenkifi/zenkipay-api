@@ -48,19 +48,20 @@ jobs:
           echo "Version pasada"
           cat ZenkipayApiLastVersion.txt
           set /p PreviousVersion=<ZenkipayApiLastVersion.txt
-          echo $PreviousVersion
+          echo %PreviousVersion%
           echo "Version nueva"
           rm ZenkipayApiLastVersion.txt
           cat ../CHANGELOG.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
           cat ZenkipayApiLastVersion.txt
-          echo $PreviousVersion
+          echo %PreviousVersion%
           set /p NewVersion=<ZenkipayApiLastVersion.txt
-          echo $NewVersion
+          echo %NewVersion%
           ls -la
 
       - name: Subiendo versionado para iniciar construcción de librerías de SDKs
         run: |
-          echo $PreviousVersion
+          echo %PreviousVersion%
+          echo %$NewVersion%
           if [ "$PreviousVersion" = "$NewVersion" ]; then
             echo "No ha habido cambios en la versión"
           else
