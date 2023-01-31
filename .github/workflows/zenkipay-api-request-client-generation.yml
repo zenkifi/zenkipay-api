@@ -63,7 +63,7 @@ jobs:
       - name: Subiendo versionado para iniciar construcción de librerías de SDKs
         run: |
           echo $PreviousVersion
-          echo $$NewVersion
+          echo $NewVersion
           if ${{ $PreviousVersion == $NewVersion }}; then
             echo "No ha habido cambios en la versión"
           else
