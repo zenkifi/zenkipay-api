@@ -64,7 +64,7 @@ jobs:
         run: |
           echo $PreviousVersion
           echo $NewVersion
-          if ${{ $PreviousVersion == $NewVersion }}; then
+          if [ "$PreviousVersion" = "$NewVersion" ]; then
             echo "No ha habido cambios en la versión"
           else
             echo "Hay una nueva versión, se mandara a generar clientes."
