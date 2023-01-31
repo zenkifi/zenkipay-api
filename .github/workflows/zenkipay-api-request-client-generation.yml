@@ -56,14 +56,18 @@ jobs:
           cat ../CHANGELOG.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
           cat ZenkipayApiLastVersion.txt
           echo $PreviousVersion
+          echo $PreviousVersion >> $GITHUB_ENV
           NewVersion=$(cat ZenkipayApiLastVersion.txt)
           echo $NewVersion
+          echo $NewVersion >> $GITHUB_ENV
           ls -la
 
       - name: Subiendo versionado para iniciar construcción de librerías de SDKs
         run: |
           echo $PreviousVersion
           echo $NewVersion
+          echo "${{ env.PreviousVersion }}"
+          echo "${{ env.NewVersion }}"
           if [ "$PreviousVersion" = "$NewVersion" ]; then
             echo "No ha habido cambios en la versión"
           else
