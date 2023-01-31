@@ -56,7 +56,7 @@ jobs:
           cat ../CHANGELOG.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
           cat ZenkipayApiLastVersion.txt
           echo $PreviousVersion
-          set /p $NewVersion=<ZenkipayApiLastVersion.txt
+          NewVersion=$(cat ZenkipayApiLastVersion.txt)
           echo $NewVersion
           ls -la
 
