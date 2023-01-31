@@ -47,17 +47,28 @@ jobs:
           cd zenkipay-api-clients-sdk
           echo "Version pasada"
           cat ZenkipayApiLastVersion.txt
+          set /p PreviousVersion=<ZenkipayApiLastVersion.txt
+          echo $PreviousVersion
           echo "Version nueva"
           rm ZenkipayApiLastVersion.txt
-          cat ../README.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
+          cat ../CHANGELOG.md | grep "Zenkipay API specification last version:" | awk '{print $6}' > ZenkipayApiLastVersion.txt
           cat ZenkipayApiLastVersion.txt
+          echo $PreviousVersion
+          set /p NewVersion=<ZenkipayApiLastVersion.txt
+          echo $NewVersion
           ls -la
 
       - name: Subiendo versionado para iniciar construcción de librerías de SDKs
         run: |
-          cd zenkipay-api-clients-sdk
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add ZenkipayApiLastVersion.txt
-          git commit -m "Se solicita la generación y actualización de los SDK's"
-          git push
+          echo $PreviousVersion
+          if [ "$PreviousVersion" = "$NewVersion" ]; then
+            echo "No ha habido cambios en la versión"
+          else
+            echo "Hay una nueva versión, se mandara a generar clientes."
+            cd zenkipay-api-clients-sdk
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add ZenkipayApiLastVersion.txt
+            git commit -m "Se solicita la generación y actualización de los SDK's"
+            git push
+          fi
