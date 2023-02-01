@@ -70,9 +70,9 @@ jobs:
           echo "${{ env.PreviousVersion }}"
           echo "${{ env.NewVersion }}"
           if [ "$PreviousVersion" = "$NewVersion" ]; then
-            echo "No ha habido cambios en la versión"
+            echo "No ha habido cambios en la versión $PreviousVersion"
           else
-            echo "Hay una nueva versión, se mandara a generar clientes."
+            echo "Hay una nueva versión $NewVersion, se mandara a generar clientes."
             cd zenkipay-api-clients-sdk
             git config user.name github-actions
             git config user.email github-actions@github.com
