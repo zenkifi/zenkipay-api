@@ -28,6 +28,7 @@ jobs:
       - name: Subiendo especificación actualizada al repositorio de Postman
         run: |
             RepoStatus=$(git status -uno | grep "up to date") 
+            echo "$RepoStatus"
             if [ "$RepoStatus" = "Your branch is up to date with 'origin/main'" ]; then
               echo "No ha habido cambios en el repositorio $RepoStatus"
             else
