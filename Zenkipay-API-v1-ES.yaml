@@ -2549,7 +2549,7 @@ components:
             * FATAL  - Cualquier error que fuerce el cierre del servicio o la aplicación para evitar la pérdida de datos (o una mayor pérdida de datos). Se reserva solo para los errores y situaciones más atroces en los que se garantiza que ha habido corrupción o pérdida de datos.
             * SEVERE - Cualquier error que sea fatal para el servicio, pero no para la aplicación completa (El servicio dejo de responder o no se puede ejecutar una operación). Estos errores forzarán la intervención del usuario (administrador o usuario directo).
             * ERROR  - Cualquier error que sea fatal para la operación, pero no para el servicio o la aplicación (no se puede abrir un archivo requerido, faltan datos, etc.). Estos errores forzarán la intervención del usuario (administrador o usuario directo).
-            * WARN   - Cualquier cosa que potencialmente pueda causar rarezas en la aplicación, pero para lo cual me estoy recuperando automáticamente. (Como cambiar de un servidor primario a uno de respaldo, volver a intentar una operación, perder datos secundarios, etc.)
+            * WARN   - Cualquier cosa que potencialmente pueda causar rarezas en la aplicación, pero para lo cual me estoy recuperando automáticamente (Como cambiar de un servidor primario a uno de respaldo, volver a intentar una operación, perder datos secundarios, etc.).
             * INFO   - Designa mensajes informativos que resaltan el progreso de la aplicación y posiblemnte hubo algún error menor que afecta  muy poco a la experiencia.
           type: string
           nullable: false
