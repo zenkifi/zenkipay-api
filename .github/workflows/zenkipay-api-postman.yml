@@ -27,8 +27,13 @@ jobs:
 
       - name: Subiendo especificación actualizada al repositorio de Postman
         run: |
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add postman/schemas/Zenkipay-API-v1-EN.yaml
-            git commit -m "Se actualiza especificación de API a repo. de Postman"
-            git push
+            RepoStatus=$(git status -uno | grep "up to date") 
+            if [ "$RepoStatus" = "Your branch is up to date with 'origin/main'" ]; then
+              echo "No ha habido cambios en el repositorio $RepoStatus"
+            else
+              git config user.name github-actions
+              git config user.email github-actions@github.com
+              git add postman/schemas/Zenkipay-API-v1-EN.yaml
+              git commit -m "Se actualiza especificación de API a repo. de Postman"
+              git push
+            fi
