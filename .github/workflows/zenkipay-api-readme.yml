@@ -12,7 +12,7 @@ on:
     paths:
       - 'Zenkipay-API-v1-EN.yaml'
       - 'Zenkipay-API-v1-ES.yaml'
-      - '.github/workflows/zenkipay-api.yml'
+      - '.github/workflows/zenkipay-api-readme.yml'
 
 jobs:
   rdme-openapi:

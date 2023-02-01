@@ -1,4 +1,5 @@
-# Zenkipay API specification ![example workflow](https://github.com/zenkifi/zenkipay-api/actions/workflows/zenkipay-api.yml/badge.svg) ![example workflow](https://github.com/zenkifi/zenkipay-api/actions/workflows/zenkipay-api-request-client-generation.yml/badge.svg)
+![example workflow](https://github.com/zenkifi/zenkipay-api/actions/workflows/zenkipay-api-readme.yml/badge.svg) ![example workflow](https://github.com/zenkifi/zenkipay-api/actions/workflows/zenkipay-api-postman.yml/badge.svg) ![example workflow](https://github.com/zenkifi/zenkipay-api/actions/workflows/zenkipay-api-request-client-generation.yml/badge.svg)
+# Zenkipay API specification
 
 ##  Description
 Definition of technical specification of the product; Zenkipay is a gateway cryptocurrency payment system that allows merchant's to receive payments on their e-commerce portals. Unlike other platforms, Zenkipay ensures customer satisfaction through its payment process. guarantee deposit (delivered product and expected quality) to settle payment to the merchant, thus avoiding the loss of client assets due to online scams.
