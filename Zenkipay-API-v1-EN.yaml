@@ -3,7 +3,7 @@
 #|
 #| It is prohibited to copy, reproduce, distribute, publish, transmit, broadcast, or
 #| in any way exploit any part of this document without permission
-#| prior written notice of Zenki or the corresponding owners.
+#| prior written notice of Zenkipay or the corresponding owners.
 #+-----------------------------------------------------------------------------------------
 #|
 #|  API definition for Zenkipay
@@ -13,7 +13,7 @@
 openapi: 3.0.0
 info:
   title: Zenkipay API
-  version: 1.0.0
+  version: 1.0.1
   contact:
     email: support@zenki.fi
     name: Support team
@@ -2383,6 +2383,19 @@ components:
                 - PENDING
                 - COMPLETED
               example: COMPLETED
+            operationMode:
+              description: |-
+                Scheme in which the merchant will receive the amount of its sales when the merchant makes a withdrawal.
+                
+                Possible values:
+                * FIAT   - In this scheme, the merchant will receive the withdrawal of its funds in the local currency of its country.
+                * CRYPTO - In this scheme, the merchant will receive the withdrawal of its funds in stablecoin or cryptocurrency.
+              type: string
+              nullable: false
+              enum:
+                - FIAT
+                - CRYPTO
+              example: FIAT
         integrationConfig:
           description: Merchant integrations settings.
           type: object
@@ -2465,6 +2478,12 @@ components:
                 nullable: false
                 maxLength: 64
                 example: BTC
+              blockchain:
+                description: 'Supported blockchain identifier, see: https://support.zenki.fi/developer-center/docs/en/blockchains-soportadas'
+                type: string
+                nullable: false
+                maxLength: 64
+                example: BTC
               active:
                 description: Indicates if the cryptocurrency is active or not.
                 type: boolean
@@ -2508,6 +2527,29 @@ components:
               format: int64
               minimum: 0
               example: 24
+        fiatAssets:
+          description: Supported currencies list.
+          type: array
+          nullable: false
+          items:
+            description: Configuration for each currency.
+            type: object
+            required:
+            - currency
+            - active
+            nullable: false
+            properties:
+              currency:
+                description: 'Unique currency code of the country that is reported in the order, the ISO 4217 standard definition with 3 characters is used, see:https://es.wikipedia.org/wiki/ISO_4217 or https://www.iso.org/iso-4217-currency-codes.html'
+                type: string
+                nullable: false
+                maxLength: 64
+                example: MXN
+              active:
+                description: Indicates if the currency is active or not.
+                type: boolean
+                nullable: false
+                example: true
               
 #---------------------------------------------
 #  Object: ErrorResponse
