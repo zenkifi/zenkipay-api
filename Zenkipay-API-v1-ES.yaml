@@ -13,11 +13,11 @@
 openapi: 3.0.0
 info:
   title: Zenkipay API
-  version: 1.0.1
+  version: 1.1.0
   contact:
     email: support@zenki.fi
     name: Equipo de soporte
-    url: 'https://www.zenki.fi/'
+    url: 'https://www.zenkipay.io/'
   description: |-
     Definición de especificación técnica del producto; Zenkipay es una pasarela
     de pago de criptomonedas que permite a los comercios recibir pagos en sus
@@ -307,6 +307,214 @@ paths:
       security:
         - JWTAuth: []
 #---------------------------------------------
+#  Endpoint: Listado de órdenes de pago
+#---------------------------------------------        
+    get:
+      summary: Listado de órdenes de pago
+      description: Servicio que permite listar las órdenes de pago de un comercio.
+      externalDocs:
+        url: 'https://developer.zenki.fi/'
+        description: >-
+          Para tener mayor detalle de los servicios, consultar la documentación
+          oficial de Zenkipay.
+      parameters:
+        - in: header
+          name: X-ZENKI-PLUGIN-ID
+          required: false
+          schema:
+            type: string
+          description: Identificador único del cliente utilizado para establecer la coenxión con los servicios de Zenkipay.
+          example: 4188918f7da1547d13e3
+        - in: header
+          name: Accept-Language
+          required: false
+          schema:
+            type: string
+          description: |- 
+            Indica el tipo código de lenguaje para qu el contenido de la respuesta de los servicios se regresen de acuerdo al lenguaje informado.
+            
+            Se utiliza la definición del estándar ISO_639 Véase: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes o https://www.iso.org/iso-639-language-codes.html
+          example: es
+        - in: header
+          name: Content-Type
+          required: true
+          schema:
+            type: string
+          description: Tipo de contenido aceptado.
+          example: application/json
+        - in: header
+          name: Accept
+          required: true
+          schema:
+            type: string
+          description: Formatos aceptados.
+          example: application/json
+        - in: query
+          name: size
+          required: false
+          schema:
+            type: integer
+          description: Número de elementos a devolver en la lista
+          example: 10
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+          description: Número de página que se desea listar
+          example: 0
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum:
+            - PENDING
+            - READY4PAY
+            - AWAITING_PAYMENT
+            - AWAITING_DELIVERY
+            - DELIVERED_SERVICE
+            - AWAITING_SHIPMENT
+            - SHIPPED
+            - SHIPMENT_ERROR
+            - AWAITING_SHOPPER_APPROVAL
+            - DISPUTED
+            - PENDING_SHOPPER_RETURN
+            - REFUNDED
+            - COMPLETED
+            - SETTLED
+          description: |-
+            Filtrar por el estado de las órdenes
+            
+            Posibles valores:
+            * PENDING                   - En espera a que el comprador pague la orden de pago.
+            * READY4PAY                 - Al comprador se le ha mostrado la modal y la orden está lista para que el comprador pague la orden con su monedero.
+            * AWAITING_PAYMENT          - Se ha recibido una primera confirmación por la red de blockchain, está en espera de tener las confirmaciones requeridas.
+            * AWAITING_DELIVERY         - Ya se realizó el pago del producto o servicio y la entrega del producto o servicio está en proceso.
+            * DELIVERED_SERVICE         - Ya se ha realizado la entrega del servicio.
+            * AWAITING_SHIPMENT         - Ya se realizó la carga de la guía para los productos y está en proceso el envío.
+            * SHIPPED                   - Se ha enviado el producto o servicio.
+            * SHIPMENT_ERROR            - Hubo un problema en el proceso de envío.
+            * AWAITING_SHOPPER_APPROVAL - Esperando la aprobación por parte del comprador para confirmar que ha recibido el producto o servicio.
+            * DISPUTED                  - El comprador ha iniciado un proceso de disputa con el comercio.
+            * PENDING_SHOPPER_RETURN    - El comercio esta esperando a que el comrpador realice el regreso del producto, como resultado de la disputa.
+            * REFUNDED                  - Se ha realizado el reembolso del producto o servicio al comprador.
+            * COMPLETED                 - El comprador confirma la recepción del producto o servicio satisfactoriamente y se ha hecho el intercambio a moneda estable del valor de la venta solo si aplica.
+            * SETTLED                   - Se ha liquidado la transacción al comercio.
+          example: COMPLETED
+        - in: query
+          name: startFrom
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar desde una fecha inicial
+          example: 2023-07-12
+        - in: query
+          name: endTo
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filtrar hasta una fecha final
+          example: 2023-07-28        
+        - in: query
+          name: orderId
+          required: false
+          schema:
+            type: string
+          description: Filtrar por ID de la orden
+          example: f325da2b8e3f476caa07e039406e72f0
+        - in: query
+          name: shopperEmail
+          required: false
+          schema:
+            type: string
+            format: email
+          description: Filtrar por el correo del comprador
+          example: federico@yopmail.com
+        - in: query
+          name: channel
+          required: false
+          schema:
+            type: string
+            enum: 
+              - JAVASCRIPT
+              - ECOMMERCE
+              - PAYMENT_LINK
+              - TPV
+          description: |-
+            Filtrar por el canal de venta
+            
+            Posibles valores:
+            * JAVASCRIPT - Órdenes creadas desde una integración vía API.
+            * ECOMMERCE  - Órdenes creadas desde una integración vía plugin de eCommerce.
+            * PAYMENT_LINK - Órdenes creadas con un enlace de pago.
+            * TPV         - Órdenes creadas desde la app de TPV.
+          example: ECOMMERCE
+        - in: query
+          name: tpvId
+          required: false
+          schema:
+            type: string
+          description: Filtrar por el ID de la TPV
+          example: f3359498592b
+        - in: query
+          name: voucher
+          required: false
+          schema:
+            type: string
+          description: Filtrar por código de descuento
+          example: JULIO2023
+      operationId: listOrders
+      responses:
+        '200':
+          description: Obtener listado de órdenes de pago
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderList'
+        '400':
+          description: Parámetro de orden esperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '406':
+          description: Encabezados no aceptados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '428':
+          description: El nombre del parámetro no puede encontrarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Ordenes
+      security:
+        - JWTAuth: []
+#---------------------------------------------
 #  Endpoint: Actualización de orden para pago
 #---------------------------------------------
   '/v1/pay/orders/{zenkiOrderId}':
@@ -526,7 +734,7 @@ paths:
       tags:
         - Ordenes
       security:
-        - JWTAuth: []
+        - JWTAuth: []      
 #---------------------------------------------
 #  Endpoint: Actualización de Escrow.
 #---------------------------------------------
@@ -1434,7 +1642,7 @@ components:
           description: |-
             Estado de la orden
             
-            Posibles valroes:
+            Posibles valores:
             * PENDING                   - En espera a que el comprador pague la orden de pago.
             * READY4PAY                 - Al comprador se le ha mostrado la modal y la orden está lista para que el comprador pague la orden con su monedero.
             * AWAITING_PAYMENT          - Se ha recibido una primera confirmación por la red de blockchain, está en espera de tener las confirmaciones requeridas.
@@ -1748,7 +1956,104 @@ components:
           type: string
           nullable: false
           example: 'PsFEJpunOmvPmOiRyfyBWnrKpsZ4FNSSTp1s6rCIvV6YIe+tJC7RxwgXgaVVMJHikyMjJXuZIiIB0lSs0nPe0ln50hDAk+IFz6j06wEbj7rzG4ZLQMOYaHFnNLjO/KQlxm6IUhhkZ5LtbaKChOw7+VOTM0fJBlvtWlVxl0TYS3qc2JOvY2f5/3892hKus+Qj3sSX56Y6xaHv0hHvV7MZlP9Mnvlg/AYlh03MukpvhRiIPfdOQeknWYwNuU6OZjNeO782bEbi7c8wKB3m3Ckjh+WkJ+l2nJyU6tHFBg3Lyg28xy6wWf+UfoyHBx2kHTVzrP5i0ybQPNEl0Gb95ORTb61UoZCnXDrVD4SRxHFd//V0qN1eT233hgof65eAAHu0k+t0OVJWuVrfk2olHlFBDo1DTyhiwAmX74o57a+8YxdrmMbxRmuVTb8iXrtcihxcsLINC1FhT3QfQdXDhpS+WYILcgpQ0SRFHKCAHP6HjFG6T2hO4NnG6rNut6DsjWCIZI8MJdZSMYDQ+n7wJ63jzKGc1NW83U5cUWtZhhBwUo221U9/3XXMBb3bnY8Ej5gHreRodXCyOowjutP+XICwevvuJa4BAEYJ6DJmqxWBL1pBcNKoLTtGqYzXJg1HFZ2qPzdR9jZSsk15q+Wg/BlRXaeIe0WA495w1FwPS+SRjU0='
-
+#---------------------------------------------
+#  Objeto: OrderList
+#---------------------------------------------          
+    OrderList:
+      description: Objeto que representa el listado de órdenes páginado
+      type: object
+      required:
+        - content
+        - pageable
+        - totalPages
+        - totalElements
+        - last
+        - sort
+        - numberOfElements
+        - first
+        - size
+        - number
+        - empty
+      properties:
+        content:
+          description: Objeto que contiene un arreglo de objetos de tipo Order
+          type: array
+          items:  
+            oneOf:
+              - $ref: '#/components/schemas/Order'
+        pageable:
+          description: Proporciona información del paginado de la lista de órdenes
+          type: object
+          properties:            
+            sort:
+              description: Indica si hay ordenamiento en el listado
+              type: object
+              properties:
+                sorted:
+                  type: boolean
+                unsorted:
+                  type: boolean
+                empty:
+                  type: boolean
+              required:
+                - sorted
+                - unsorted
+                - empty
+            pageNumber:
+              type: integer
+            pageSize:
+              type: integer
+            offset:
+              type: integer
+            paged:
+              type: boolean
+            unpaged:
+              type: boolean
+          required:
+            - sort
+            - pageNumber
+            - pageSize
+            - offset
+            - paged
+            - unpaged
+        totalPages:
+          description: Número total de páginas
+          type: integer
+        totalElements:
+          description: Número total de elementos
+          type: integer
+        last:
+          description: Indica si es la última página
+          type: boolean
+        sort:
+          description: Indica si hay ordenamiento en el listado
+          type: object
+          properties:
+            sorted:
+              type: boolean
+            unsorted:
+              type: boolean
+            empty:
+              type: boolean
+          required:
+            - sorted
+            - unsorted
+            - empty
+        numberOfElements:
+          description: Número de elementos devueltos
+          type: integer
+        first:
+          description: Indica si es la primera página
+          type: boolean
+        size:
+          description: Indica el tamaño máximo de elementos posibles a mostrar
+          type: integer
+        number:
+          description: Número de la página
+          type: integer
+        empty:
+          description: Indica si no contiene elementos la página solicitada
+          type: boolean
 #---------------------------------------------
 #  Objeto: Tracking
 #---------------------------------------------
@@ -1963,7 +2268,7 @@ components:
           description: |-
             Estado del reembolso
             
-            Posibles valroes:
+            Posibles valores:
             * PENDING         - En espera a que se aplique el reemboslo.
             * AWAITING_REFUND - Se ha recibido una primera confirmación por la red de blockchain, está en la espera de tener las confirmaciones requeridas.
             * REFUNDED        - Se ha realizado el reembolso del producto o servicio al comprador.
@@ -2237,7 +2542,7 @@ components:
           description: |-
             Listado de blockchains soportadas.
             
-            Posibles valroes:
+            Posibles valores:
             * Bitcoin
             * Ethereum
             * Litecoin
@@ -2343,7 +2648,7 @@ components:
               description: |-
                 Tipo de cuenta del comercio.
                 
-                Posibles valroes:
+                Posibles valores:
                 * PERSONAL - Persona natural física con actividad comercial.
                 * ENTITY - Empresa con actividad comercial.
               type: string
