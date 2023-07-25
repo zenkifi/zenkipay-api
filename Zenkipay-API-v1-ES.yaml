@@ -408,7 +408,7 @@ paths:
           schema:
             type: string
             format: date
-          description: Filtrar desde una fecha inicial
+          description: Filtrar desde una fecha inicial. Notación tal como se define en **RFC 3339, sección 5.6**.
           example: 2023-07-12
         - in: query
           name: endTo
@@ -416,7 +416,7 @@ paths:
           schema:
             type: string
             format: date
-          description: Filtrar hasta una fecha final
+          description: Filtrar hasta una fecha final. Notación tal como se define en **RFC 3339, sección 5.6**.
           example: 2023-07-28        
         - in: query
           name: orderId
@@ -432,7 +432,7 @@ paths:
             type: string
             format: email
           description: Filtrar por el correo del comprador
-          example: federico@yopmail.com
+          example: federico@gmail.com
         - in: query
           name: channel
           required: false

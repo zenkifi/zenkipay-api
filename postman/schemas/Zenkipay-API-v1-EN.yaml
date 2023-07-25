@@ -408,7 +408,7 @@ paths:
           schema:
             type: string
             format: date
-          description: Filter from an initial date
+          description: Filter from an initial date. Notation as defined by **RFC 3339, section 5.6**.
           example: 2023-07-12
         - in: query
           name: endTo
@@ -416,7 +416,7 @@ paths:
           schema:
             type: string
             format: date
-          description: Filter to an end date
+          description: Filter to an end date. Notation as defined by **RFC 3339, section 5.6**.
           example: 2023-07-28        
         - in: query
           name: orderId
@@ -432,7 +432,7 @@ paths:
             type: string
             format: email
           description: Filter by shopper's email address
-          example: federico@yopmail.com
+          example: federico@gmail.com
         - in: query
           name: channel
           required: false
@@ -511,7 +511,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       tags:
-        - Ordenes
+        - Orders
       security:
         - JWTAuth: []        
 #---------------------------------------------
