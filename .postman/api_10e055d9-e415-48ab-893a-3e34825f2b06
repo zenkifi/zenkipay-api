@@ -9,6 +9,7 @@ id = 10e055d9-e415-48ab-893a-3e34825f2b06
 
 [config.relations.collections]
 rootDirectory = postman/collections
+files[] = {"id":"24996507-85e30354-bdc8-491c-b792-f8228a7e4658","path":"Zenkipay API v1.0.1.json","metaData":{"generateCollectionPreferences":"{\"requestNameSource\":\"Fallback\",\"indentCharacter\":\"Space\",\"parametersResolution\":\"Schema\",\"folderStrategy\":\"Tags\",\"includeAuthInfoInExample\":true,\"enableOptionalParameters\":true,\"keepImplicitHeaders\":false,\"includeDeprecated\":true,\"alwaysInheritAuthentication\":false,\"updateCollectionSync\":true,\"requestParametersResolution\":\"Schema\",\"exampleParametersResolution\":\"Schema\"}"}}
 files[] = {"id":"24996507-81051d0b-7c5c-4ac9-af81-a7399a41e494","path":"Zenkipay API v1.json","metaData":{}}
 
 [config.relations.collections.metaData]
